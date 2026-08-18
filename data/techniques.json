@@ -1,5 +1,57 @@
 [
   {
+    "id": "listen-to-weightless-when-anxious",
+    "title": "急に不安が強くなったとき、Weightlessを聴く",
+    "summary": "急に不安が強くなって落ち着かないとき、安全な場所でMarconi Unionの「Weightless」を聴き、気持ちを落ち着けるきっかけにする。治療ではなく、あくまで補助的なセルフケアとして使う。",
+    "category": "健康・身体",
+    "tags": ["不安", "リラックス", "音楽", "Weightless", "Marconi Union"],
+    "updated": "2026-08-18",
+    "quickAnswer": "安全な場所で座るか横になり、音量を上げすぎずにMarconi Unionの「Weightless」を聴く。『自律神経を治す方法』ではなく、急な不安時に落ち着くための選択肢のひとつとして使う。",
+    "steps": [
+      "まず、運転中・自転車走行中などでは使わない。安全な場所で座るか横になる。",
+      "イヤホンまたはスピーカーで、Marconi Unionの「Weightless」を小さめ〜普通の音量で流す。",
+      "数分間は何かを頑張って考えようとせず、呼吸や音の変化に意識を向ける。",
+      "少し落ち着いたら水を飲む、姿勢を楽にする、照明や画面の刺激を減らすなど、環境も整える。",
+      "不安が繰り返す、生活に支障がある、症状が強い場合は、この方法だけで済ませず医療機関へ相談する。"
+    ],
+    "commands": [],
+    "explanation": [
+      {
+        "term": "Weightless",
+        "text": "英国のアンビエント・グループMarconi Unionが、Lyz Cooperの助言を受けてリラクゼーションを意図して制作した楽曲。"
+      },
+      {
+        "term": "実験",
+        "text": "Mindlabの公開レポートでは、18〜61歳の女性20人を対象に、心拍変動・皮膚電気活動（EDA）・呼吸を測定。Weightlessは比較した楽曲の中で最も高いリラクゼーションスコア73%を示し、他のリラックス系楽曲より約11%、マッサージより約6%高かった。"
+      },
+      {
+        "term": "65%",
+        "text": "SNSや多数の二次記事では『不安が65%減った』と紹介されているが、British Academy of Sound Therapyが公開しているMindlabのフルレポートでは、その数値は主要結果として確認できない。数値を断定せず、『リラックス効果が示された小規模実験がある』程度に捉える。"
+      }
+    ],
+    "tips": [
+      "イヤホンは必須ではない。周囲の安全を確保できる環境ならスピーカーでもよい。",
+      "実験は20人の女性を対象にした小規模なものなので、誰にでも同じ効果が出るとは限らない。",
+      "『自律神経の乱れ』は広い表現で、急な不安やそわそわ感の原因をこの言葉だけで特定することはできない。",
+      "音楽で落ち着くことはあっても、強い不安発作、胸痛、息苦しさ、失神しそうな感覚などがある場合は別の対応が必要になることがある。",
+      "眠気が出る可能性を考え、運転中など注意力が必要な場面では聴かない。"
+    ],
+    "sources": [
+      {
+        "label": "British Academy of Sound Therapy — Weightless",
+        "url": "https://britishacademyofsoundtherapy.com/research/weightless-marconi-union-ft-lyz-cooper/"
+      },
+      {
+        "label": "Mindlab — A Study Investigating the Relaxation Effects of the Music Track Weightless (PDF)",
+        "url": "https://britishacademyofsoundtherapy.com/wp-content/uploads/2023/03/Mindlab-Report-Weightless-Radox-Spa.pdf"
+      },
+      {
+        "label": "きっかけになったX投稿",
+        "url": "https://x.com/shiroinurestart/status/2089549093001404762?s=46"
+      }
+    ]
+  },
+  {
     "id": "extract-audio-from-mov",
     "title": "MOVファイルから音声だけ抜く",
     "summary": "MOVから映像を除き、音声だけをMP3またはM4Aとして保存する。",
