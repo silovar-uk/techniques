@@ -1,0 +1,45 @@
+[
+  {
+    "id": "extract-audio-from-mov",
+    "title": "MOVファイルから音声だけ抜く",
+    "summary": "MOVから映像を除き、音声だけをMP3またはM4Aとして保存する。",
+    "category": "動画・音声",
+    "tags": ["MOV", "FFmpeg", "MP3", "音声抽出"],
+    "updated": "2026-08-18",
+    "quickAnswer": "FFmpegを使う。MP3にするなら下のコマンドをそのまま使えばOK。",
+    "steps": [
+      "FFmpegをインストールする。",
+      "MOVファイルがあるフォルダでターミナル／コマンドプロンプトを開く。",
+      "MP3にしたい場合は、下のコマンドを実行する。",
+      "同じフォルダに output.mp3 ができれば完了。"
+    ],
+    "commands": [
+      {
+        "label": "MP3に変換する",
+        "code": "ffmpeg -i input.mov -vn -c:a libmp3lame -q:a 2 output.mp3",
+        "note": "input.mov を実際のファイル名に置き換える。互換性重視ならこれ。"
+      },
+      {
+        "label": "音質を変えずに音声だけ抜く",
+        "code": "ffmpeg -i input.mov -vn -c:a copy output.m4a",
+        "note": "元の音声がM4Aコンテナで扱える形式なら、再エンコードせず高速に取り出せる。"
+      }
+    ],
+    "explanation": [
+      {"term": "-i input.mov", "text": "入力するMOVファイルを指定する。"},
+      {"term": "-vn", "text": "映像（video）を出力しない指定。音声だけ残す。"},
+      {"term": "-c:a libmp3lame", "text": "音声をMP3としてエンコードする。"},
+      {"term": "-q:a 2", "text": "MP3の可変ビットレート品質を高めに指定する。"},
+      {"term": "-c:a copy", "text": "音声を再エンコードせず、そのままコピーする。"}
+    ],
+    "tips": [
+      "文字起こしや共有目的ならMP3にしておくと扱いやすい。",
+      "処理速度と音質維持を優先するなら、まず -c:a copy を試す。",
+      "ファイル名に空白がある場合は、\"my movie.mov\" のようにダブルクォートで囲む。"
+    ],
+    "sources": [
+      {"label": "FFmpeg Documentation", "url": "https://ffmpeg.org/ffmpeg.html"},
+      {"label": "FFmpeg Download", "url": "https://ffmpeg.org/download.html"}
+    ]
+  }
+]
