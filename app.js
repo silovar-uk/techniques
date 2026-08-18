@@ -21,14 +21,22 @@ function formatDate(value) {
 }
 
 function searchableText(item) {
+  const commandText = (item.commands || []).flatMap(command => [command.label, command.code, command.note]);
+  const explanationText = (item.explanation || []).flatMap(row => [row.term, row.text]);
+  const sourceText = (item.sources || []).flatMap(source => [source.label, source.url]);
+
   return normalize([
     item.title,
     item.summary,
     item.category,
     ...(item.tags || []),
     item.quickAnswer,
-    ...(item.tips || [])
-  ].join(' '));
+    ...(item.steps || []),
+    ...commandText,
+    ...explanationText,
+    ...(item.tips || []),
+    ...sourceText
+  ].filter(Boolean).join(' '));
 }
 
 function getFilteredItems() {
@@ -63,7 +71,7 @@ function renderHome() {
           value="${escapeHtml(searchQuery)}"
           aria-label="やり方を検索"
         >
-        <p class="search-hint">タイトル・カテゴリ・タグ・本文から検索　／ キーで検索欄へ</p>
+        <p class="search-hint">タイトル・カテゴリ・タグ・本文から検索　／ 「/」キーで検索欄へ</p>
       </div>
 
       <div class="filters" aria-label="カテゴリで絞り込む">
@@ -238,7 +246,7 @@ function route() {
 
   const item = techniques.find(entry => entry.id === path);
   item ? renderArticle(item) : renderNotFound();
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 async function init() {
