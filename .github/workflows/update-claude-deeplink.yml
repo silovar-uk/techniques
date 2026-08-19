@@ -1,0 +1,115 @@
+name: Update Claude deep link technique
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-claude-deeplink.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Claude section
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'data/techniques.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const item = data.find(x => x.id === 'send-data-to-chatgpt-with-url-prompt');
+          if (!item) throw new Error('target technique not found');
+
+          item.updated = '2026-08-19';
+          item.quickAnswer = '短いデータはURLエンコードしてAIへ渡せる。ChatGPTでは `https://chatgpt.com/?prompt=...` のような形が使える場合があるが公開仕様ではない。Claudeは公式Deep Linkがあり、Claude Desktopの通常チャットなら `claude://claude.ai/new?q=...`、Claude Codeなら `https://claude.ai/code?prompt=...` を使える。GeminiはWeb版への公式prefill URLが確認できないためコピー→起動が安全。Perplexityの `/search?q=` はWeb連携用の正式APIとしては保証されないため、壊れたらコピー方式へ戻す。';
+
+          const commands = (item.commands || []).filter(c => ![
+            'Claude版（コピーして開く）',
+            'Claude版（Deep Link）',
+            'Claude Code版（Web URL）',
+            '複数AI対応の共通関数'
+          ].includes(c.label));
+
+          commands.push(
+            {
+              label: 'Claude版（公式Deep Link / Desktop）',
+              code: 'const prompt = `以下を整理して。\\n\\n${text}`;\nwindow.location.href = `claude://claude.ai/new?q=${encodeURIComponent(prompt)}`;',
+              note: 'Anthropic公式のClaude Desktop Deep Link。新しいチャットを開き、入力欄へプロンプトを事前入力する。自動送信ではなく、ユーザーが確認して送信する。'
+            },
+            {
+              label: 'Claude Code版（公式Web URL）',
+              code: 'const prompt = `このリポジトリの課題を整理して。\\n\\n${text}`;\nwindow.open(`https://claude.ai/code?prompt=${encodeURIComponent(prompt)}`, "_blank", "noopener,noreferrer");',
+              note: 'Claude Codeの公式Web導線。必要に応じて `repositories=owner/repo` などのパラメータも追加できる。'
+            },
+            {
+              label: 'Claude Code版（リポジトリも渡す）',
+              code: 'const prompt = "このリポジトリを確認して改善案を出して";\nconst repo = "owner/repo";\nwindow.open(`https://claude.ai/code?prompt=${encodeURIComponent(prompt)}&repositories=${encodeURIComponent(repo)}`, "_blank", "noopener,noreferrer");',
+              note: 'プロンプトとGitHubリポジトリを同時に指定する例。Claude Code向け。'
+            },
+            {
+              label: '複数AI対応の共通関数',
+              code: 'async function openInAI(provider, prompt) {\n  const encoded = encodeURIComponent(prompt);\n  if (provider === "chatgpt") {\n    window.open(`https://chatgpt.com/?prompt=${encoded}`, "_blank", "noopener,noreferrer");\n    return;\n  }\n  if (provider === "claude") {\n    window.location.href = `claude://claude.ai/new?q=${encoded}`;\n    return;\n  }\n  if (provider === "claude-code") {\n    window.open(`https://claude.ai/code?prompt=${encoded}`, "_blank", "noopener,noreferrer");\n    return;\n  }\n  if (provider === "perplexity") {\n    window.open(`https://www.perplexity.ai/search?q=${encoded}`, "_blank", "noopener,noreferrer");\n    return;\n  }\n  const homeUrls = { gemini: "https://gemini.google.com/app" };\n  await navigator.clipboard.writeText(prompt);\n  window.open(homeUrls[provider], "_blank", "noopener,noreferrer");\n}',
+              note: 'Claudeは公式Deep Linkを直接使い、Geminiだけコピー→起動にフォールバックする形。'
+            }
+          );
+          item.commands = commands;
+
+          item.explanation = item.explanation || [];
+          item.explanation = item.explanation.filter(x => ![
+            'AIごとにURL連携の扱いが違う',
+            'コピー → AIを開く方式',
+            'Claudeの公式Deep Link'
+          ].includes(x.term));
+          item.explanation.push(
+            {
+              term: 'Claudeの公式Deep Link',
+              text: 'Claude Desktopでは `claude://claude.ai/new?q=...` が公式に案内されており、外部リンクから新規チャットを開いてプロンプトを事前入力できる。送信は自動ではない。Web通常チャットの古い `https://claude.ai/new?q=...` とは分けて扱う。'
+            },
+            {
+              term: 'Claude CodeはHTTPS URLにも対応',
+              text: 'Claude Codeでは `https://claude.ai/code?prompt=...` のようなWeb URLが公式に案内されている。リポジトリ指定などを追加でき、通常チャットのDeep Linkより外部ツール連携に向いている。'
+            },
+            {
+              term: 'AIごとにURL連携の扱いが違う',
+              text: 'Claudeは公式Deep Linkを持つ一方、ChatGPTの `?prompt=` やPerplexityの `/search?q=` は公開された外部連携APIと同じ安定性を期待しない。GeminiはWeb版の公式prefill URLが確認できないため、コピーしてWebアプリを開く方式を基本にすると保守しやすい。'
+            },
+            {
+              term: 'コピー → AIを開く方式',
+              text: '`navigator.clipboard.writeText(prompt)` で本文をクリップボードへ入れ、対象AIのトップ画面を開く。公式Deep Linkがないサービスのフォールバックとして残しておくと壊れにくい。'
+            }
+          );
+
+          item.tips = (item.tips || []).filter(t => !t.includes('Claude・Geminiは、プロンプトをクリップボード'));
+          item.tips.push(
+            'Claude Desktopが入っている環境では `claude://claude.ai/new?q=...` を第一候補にする。通常Webチャットの古い `https://claude.ai/new?q=...` 形式は非保証として扱う。',
+            'Claude Codeへ投げたい場合は `https://claude.ai/code?prompt=...` を使う。コードやGitHubリポジトリを扱う導線ではこちらの方が自然。'
+          );
+          item.tips = Array.from(new Set(item.tips));
+
+          item.sources = item.sources || [];
+          const sourceMap = new Map(item.sources.map(s => [s.url, s]));
+          sourceMap.set('https://support.claude.com/en/articles/14729294-open-claude-desktop-with-a-link', {
+            label: 'Anthropic Support — Open Claude Desktop with a link',
+            url: 'https://support.claude.com/en/articles/14729294-open-claude-desktop-with-a-link'
+          });
+          sourceMap.set('https://code.claude.com/docs/en/web-quickstart', {
+            label: 'Claude Code Docs — Web quickstart',
+            url: 'https://code.claude.com/docs/en/web-quickstart'
+          });
+          item.sources = [...sourceMap.values()];
+
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+          NODE
+
+      - name: Commit and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/update-claude-deeplink.yml
+          git add data/techniques.json
+          git commit -m "Use official Claude deep links in AI URL technique"
+          git push
