@@ -19,7 +19,7 @@
       "clipboard"
     ],
     "updated": "2026-08-19",
-    "quickAnswer": "短いデータはURLエンコードしてAIへ渡せる。ChatGPTでは `https://chatgpt.com/?prompt=...` のような形が使える場合があるが公開仕様ではない。ClaudeやGeminiのWeb版では、外部サイトから任意のプロンプトをURLだけでprefillする公式仕様は確認できないため、`navigator.clipboard.writeText(prompt)` でコピーしてAIを開く方式が安全。Perplexityの `search?q=` 形式もWebフロントの正式APIとしては保証されないため、壊れたらコピー方式へ戻す。",
+    "quickAnswer": "短いデータはURLエンコードしてAIへ渡せる。ChatGPTでは `https://chatgpt.com/?prompt=...` のような形が使える場合があるが公開仕様ではない。Claudeは公式Deep Linkがあり、Claude Desktopの通常チャットなら `claude://claude.ai/new?q=...`、Claude Codeなら `https://claude.ai/code?prompt=...` を使える。GeminiはWeb版への公式prefill URLが確認できないためコピー→起動が安全。Perplexityの `/search?q=` はWeb連携用の正式APIとしては保証されないため、壊れたらコピー方式へ戻す。",
     "steps": [
       "AIへ渡したい文章やJSONを1つの文字列にまとめる。例: 「以下のデータを要約して。\n\n」＋JSON.stringify(data)。",
       "その文字列を `encodeURIComponent()` でURLエンコードする。日本語、改行、記号をそのままURLへ入れない。",
@@ -49,11 +49,6 @@
         "note": "`?prompt=` は便利だが、OpenAIの公開Helpで正式な外部連携仕様として案内されているものではない。仕様変更に備える。"
       },
       {
-        "label": "Claude版（コピーして開く）",
-        "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nawait navigator.clipboard.writeText(prompt);\nwindow.open(\"https://claude.ai/\", \"_blank\", \"noopener,noreferrer\");",
-        "note": "ClaudeのWeb版で任意プロンプトをURLだけでprefillする公式仕様は確認できないため、コピー→Claudeを開く形が堅い。"
-      },
-      {
         "label": "Gemini版（コピーして開く）",
         "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nawait navigator.clipboard.writeText(prompt);\nwindow.open(\"https://gemini.google.com/app\", \"_blank\", \"noopener,noreferrer\");",
         "note": "GeminiのWeb版も、外部サイトからプロンプト本文をURLへ埋め込む正式仕様は確認できない。コピー方式ならUI変更の影響を受けにくい。"
@@ -64,9 +59,24 @@
         "note": "Perplexityは質問文をそのまま検索・プロンプトとして扱えるが、`/search?q=` をWeb連携用の正式仕様として保証する公式ドキュメントは確認できない。動かなければコピー方式へ。"
       },
       {
+        "label": "Claude版（公式Deep Link / Desktop）",
+        "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nwindow.location.href = `claude://claude.ai/new?q=${encodeURIComponent(prompt)}`;",
+        "note": "Anthropic公式のClaude Desktop Deep Link。新しいチャットを開き、入力欄へプロンプトを事前入力する。自動送信ではなく、ユーザーが確認して送信する。"
+      },
+      {
+        "label": "Claude Code版（公式Web URL）",
+        "code": "const prompt = `このリポジトリの課題を整理して。\\n\\n${text}`;\nwindow.open(`https://claude.ai/code?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
+        "note": "Claude Codeの公式Web導線。必要に応じて `repositories=owner/repo` などのパラメータも追加できる。"
+      },
+      {
+        "label": "Claude Code版（リポジトリも渡す）",
+        "code": "const prompt = \"このリポジトリを確認して改善案を出して\";\nconst repo = \"owner/repo\";\nwindow.open(`https://claude.ai/code?prompt=${encodeURIComponent(prompt)}&repositories=${encodeURIComponent(repo)}`, \"_blank\", \"noopener,noreferrer\");",
+        "note": "プロンプトとGitHubリポジトリを同時に指定する例。Claude Code向け。"
+      },
+      {
         "label": "複数AI対応の共通関数",
-        "code": "async function openInAI(provider, prompt) {\n  const encoded = encodeURIComponent(prompt);\n  const directUrls = {\n    chatgpt: `https://chatgpt.com/?prompt=${encoded}`,\n    perplexity: `https://www.perplexity.ai/search?q=${encoded}`\n  };\n  if (directUrls[provider]) {\n    window.open(directUrls[provider], \"_blank\", \"noopener,noreferrer\");\n    return;\n  }\n  const homeUrls = {\n    claude: \"https://claude.ai/\",\n    gemini: \"https://gemini.google.com/app\"\n  };\n  await navigator.clipboard.writeText(prompt);\n  window.open(homeUrls[provider], \"_blank\", \"noopener,noreferrer\");\n}",
-        "note": "URL直渡しできるものと、コピー→起動のものを1つの関数で吸収する形。実サービスでは「プロンプトをコピー」ボタンも別に置くとさらに壊れにくい。"
+        "code": "async function openInAI(provider, prompt) {\n  const encoded = encodeURIComponent(prompt);\n  if (provider === \"chatgpt\") {\n    window.open(`https://chatgpt.com/?prompt=${encoded}`, \"_blank\", \"noopener,noreferrer\");\n    return;\n  }\n  if (provider === \"claude\") {\n    window.location.href = `claude://claude.ai/new?q=${encoded}`;\n    return;\n  }\n  if (provider === \"claude-code\") {\n    window.open(`https://claude.ai/code?prompt=${encoded}`, \"_blank\", \"noopener,noreferrer\");\n    return;\n  }\n  if (provider === \"perplexity\") {\n    window.open(`https://www.perplexity.ai/search?q=${encoded}`, \"_blank\", \"noopener,noreferrer\");\n    return;\n  }\n  const homeUrls = { gemini: \"https://gemini.google.com/app\" };\n  await navigator.clipboard.writeText(prompt);\n  window.open(homeUrls[provider], \"_blank\", \"noopener,noreferrer\");\n}",
+        "note": "Claudeは公式Deep Linkを直接使い、Geminiだけコピー→起動にフォールバックする形。"
       }
     ],
     "explanation": [
@@ -87,16 +97,24 @@
         "text": "OpenAI公式Helpでは、ChatGPTは chatgpt.com の入力欄へプロンプトを入れて使うことや、会話共有リンク `https://chatgpt.com/share/<conversation-ID>` は案内されている。一方、`?prompt=` や `?q=` を外部連携用の正式仕様として説明する公式Helpは確認できないため、将来変わる可能性を前提にする。"
       },
       {
+        "term": "本格連携は各社API",
+        "text": "結果を自動取得したい、大量処理したい、ファイルを安全に渡したい場合は、ChatGPTのショートカットURLではなくOpenAI API、Anthropic API、Gemini API、Perplexity APIなど各社の正式APIを使う。"
+      },
+      {
+        "term": "Claudeの公式Deep Link",
+        "text": "Claude Desktopでは `claude://claude.ai/new?q=...` が公式に案内されており、外部リンクから新規チャットを開いてプロンプトを事前入力できる。送信は自動ではない。Web通常チャットの古い `https://claude.ai/new?q=...` とは分けて扱う。"
+      },
+      {
+        "term": "Claude CodeはHTTPS URLにも対応",
+        "text": "Claude Codeでは `https://claude.ai/code?prompt=...` のようなWeb URLが公式に案内されている。リポジトリ指定などを追加でき、通常チャットのDeep Linkより外部ツール連携に向いている。"
+      },
+      {
         "term": "AIごとにURL連携の扱いが違う",
-        "text": "Web版AIは、検索サービスのようにクエリパラメータを公開仕様として提供しているとは限らない。ChatGPTやPerplexityで動くURL形式があっても、外部連携APIと同じ安定性は期待しない。ClaudeやGeminiでは、コピーしてWebアプリを開く方式を基本にすると保守しやすい。"
+        "text": "Claudeは公式Deep Linkを持つ一方、ChatGPTの `?prompt=` やPerplexityの `/search?q=` は公開された外部連携APIと同じ安定性を期待しない。GeminiはWeb版の公式prefill URLが確認できないため、コピーしてWebアプリを開く方式を基本にすると保守しやすい。"
       },
       {
         "term": "コピー → AIを開く方式",
-        "text": "`navigator.clipboard.writeText(prompt)` で本文をクリップボードへ入れ、対象AIのトップ画面を新しいタブで開く。1回貼り付ける操作は残るが、URL仕様変更に強く、複数AIへ横展開しやすい。"
-      },
-      {
-        "term": "本格連携は各社API",
-        "text": "結果を自動取得したい、大量処理したい、ファイルを安全に渡したい場合は、ChatGPTのショートカットURLではなくOpenAI API、Anthropic API、Gemini API、Perplexity APIなど各社の正式APIを使う。"
+        "text": "`navigator.clipboard.writeText(prompt)` で本文をクリップボードへ入れ、対象AIのトップ画面を開く。公式Deep Linkがないサービスのフォールバックとして残しておくと壊れにくい。"
       }
     ],
     "tips": [
@@ -106,9 +124,10 @@
       "サービス側の仕様変更で `?prompt=` が動かなくなった場合に備えて、「プロンプトをコピー」ボタンも併設すると強い。",
       "正式なシステム連携、大量処理、結果の自動取得が必要なら、URLパラメータではなくOpenAI APIを使う。",
       "「ChatGPTに聞く」「Claudeに聞く」「Geminiに聞く」「Perplexityで調べる」のように複数ボタンを並べると、同じデータを目的別に投げ分けられる。",
-      "Claude・Geminiは、プロンプトをクリップボードへコピーしてからAIを開く方式を標準にすると壊れにくい。",
       "Perplexityは調査・出典確認、Claudeは長文整理、GeminiはGoogle系との相性、ChatGPTは汎用処理、のようにボタン名自体へ用途を入れてもよい。",
-      "URL直渡しが突然動かなくなることを前提に、必ず「プロンプトをコピー」だけの退避導線を残す。"
+      "URL直渡しが突然動かなくなることを前提に、必ず「プロンプトをコピー」だけの退避導線を残す。",
+      "Claude Desktopが入っている環境では `claude://claude.ai/new?q=...` を第一候補にする。通常Webチャットの古い `https://claude.ai/new?q=...` 形式は非保証として扱う。",
+      "Claude Codeへ投げたい場合は `https://claude.ai/code?prompt=...` を使う。コードやGitHubリポジトリを扱う導線ではこちらの方が自然。"
     ],
     "sources": [
       {
@@ -138,6 +157,14 @@
       {
         "label": "Perplexity Docs — API Quickstart",
         "url": "https://docs.perplexity.ai/docs/getting-started/quickstart"
+      },
+      {
+        "label": "Anthropic Support — Open Claude Desktop with a link",
+        "url": "https://support.claude.com/en/articles/14729294-open-claude-desktop-with-a-link"
+      },
+      {
+        "label": "Claude Code Docs — Web quickstart",
+        "url": "https://code.claude.com/docs/en/web-quickstart"
       }
     ]
   },
