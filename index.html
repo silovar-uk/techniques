@@ -3,28 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="あとで思い出すための、やり方の置き場。仕事・PC・暮らしまで、小さな手順を短く残す Techniques。">
+  <meta name="description" content="「知っている」を「すぐできる」に戻すための個人用フィールドマニュアル。仕事・PC・暮らしの小さな手順を、必要な瞬間にすぐ引ける Techniques。">
   <meta name="theme-color" content="#f4f2ec">
-  <title>Techniques — やり方の置き場</title>
+  <title>Techniques — Personal Field Manual</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260819-fieldmanual1">
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="#/" aria-label="Techniques トップへ">
-      <span class="brand-mark" aria-hidden="true">T</span>
-      <span>Techniques</span>
-    </a>
-    <p class="header-note">やり方の置き場</p>
+    <div class="header-inner">
+      <a class="brand" href="#/" aria-label="Techniques トップへ">
+        <span class="brand-mark" aria-hidden="true">T</span>
+        <span class="brand-copy">
+          <strong>Techniques</strong>
+          <small>Personal field manual</small>
+        </span>
+      </a>
+      <nav class="header-actions" aria-label="サイト操作">
+        <span id="techniqueCount" class="header-count" aria-live="polite"></span>
+        <a href="https://github.com/silovar-uk/techniques" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </nav>
+    </div>
   </header>
 
   <main id="app" class="app" aria-live="polite"></main>
 
   <footer class="site-footer">
-    <p>Small methods for work, devices, and daily life.</p>
-    <a href="https://github.com/silovar-uk/techniques" target="_blank" rel="noreferrer">GitHub</a>
+    <p>Know it. Find it. Do it.</p>
+    <p>Small methods for work, devices, body, and daily life.</p>
   </footer>
 
-  <script src="app.js" defer></script>
+  <script src="app.js?v=20260819-fieldmanual1" defer></script>
 </body>
 </html>
