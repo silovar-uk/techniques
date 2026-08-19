@@ -1,0 +1,80 @@
+name: Add field manual metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-field-manual-metadata.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add stable numbers and evidence metadata
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'data/techniques.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+
+          const metadata = {
+            'extract-audio-from-mov': {
+              number: 'T-001',
+              evidence: {
+                level: 'VERIFIED',
+                note: 'FFmpeg公式ドキュメントに基づく手順。音声codecやビルド構成による条件差はある。'
+              }
+            },
+            'listen-to-weightless-when-anxious': {
+              number: 'T-002',
+              evidence: {
+                level: 'SUPPORTED',
+                note: '小規模な実験でリラクゼーション指標の変化が報告されているが、治療効果や「不安65%減」を確立したものではない。'
+              }
+            },
+            'move-middle-finger-30-times': {
+              number: 'T-003',
+              evidence: {
+                level: 'PERSONAL',
+                note: '「中指だけ30回」で疲労や頭痛が改善する直接的な臨床根拠は確認できない。短い気分転換・手の運動として保存する。'
+              }
+            },
+            'resisted-phonation-with-fist': {
+              number: 'T-004',
+              evidence: {
+                level: 'SUPPORTED',
+                note: 'ストロー発声などSOVTの関連研究はあるが、拳を口元に当てる方法そのものの効果を直接示す研究は限定的。'
+              }
+            },
+            'send-data-to-chatgpt-with-url-prompt': {
+              number: 'T-005',
+              evidence: {
+                level: 'SUPPORTED',
+                note: 'Claude Deep Linkや各社APIには公式仕様がある一方、ChatGPTの ?prompt= やPerplexityのWeb URLなど非公式・変更されうる導線も含むため、Technique全体としてはSUPPORTED扱い。'
+              }
+            }
+          };
+
+          for (const item of data) {
+            const next = metadata[item.id];
+            if (!next) continue;
+            item.number = next.number;
+            item.evidence = next.evidence;
+          }
+
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+          NODE
+
+      - name: Commit metadata and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/add-field-manual-metadata.yml
+          git add data/techniques.json
+          git commit -m "Add field manual numbers and evidence levels"
+          git push
