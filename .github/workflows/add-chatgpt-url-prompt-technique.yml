@@ -1,0 +1,111 @@
+name: Add URL prompt technique
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/add-chatgpt-url-prompt-technique.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  add-technique:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Add technique
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'data/techniques.json';
+          const items = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const entry = {
+            id: 'send-data-to-chatgpt-with-url-prompt',
+            title: 'URLからChatGPTにデータを渡す',
+            summary: 'Webページの「AIに聞く」ボタンなどから、短いテキストやJSONをURLエンコードしてChatGPTの入力欄へ渡す。コピペを減らし、ページ上のデータをそのままAIへ持っていく入口を作れる。',
+            category: 'Web・開発',
+            tags: ['ChatGPT', 'AI', 'URL', 'prompt', 'query parameter', 'JavaScript', 'encodeURIComponent'],
+            updated: '2026-08-19',
+            quickAnswer: '短いデータなら `https://chatgpt.com/?prompt=...` のようにクエリパラメータへ入れ、JavaScriptでは `encodeURIComponent()` で文字列をURLエンコードして開く。例: `https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`。ただし `?prompt=` / `?q=` はOpenAIの公式Helpで公開仕様として案内されていないため、便利なショートカットとして使い、仕様変更に備える。',
+            steps: [
+              'AIへ渡したい文章やJSONを1つの文字列にまとめる。例: 「以下のデータを要約して。\n\n」＋JSON.stringify(data)。',
+              'その文字列を `encodeURIComponent()` でURLエンコードする。日本語、改行、記号をそのままURLへ入れない。',
+              '`https://chatgpt.com/?prompt=` の後ろへエンコード済み文字列をつなぐ。`?q=` が動作する場合もあるが、どちらも公開APIとして保証された仕様ではない。',
+              '`window.open(url, "_blank", "noopener,noreferrer")` などでChatGPTを開く。環境によっては入力欄へのセットだけで、送信操作はユーザーが行う。',
+              '長いデータ、ファイル、機密情報はURLへ詰め込まず、コピー、ファイルアップロード、または正式なAPI連携を使う。'
+            ],
+            commands: [
+              {
+                label: '最小のURL例',
+                code: 'https://chatgpt.com/?prompt=%E3%81%93%E3%81%AE%E6%96%87%E7%AB%A0%E3%82%92%E8%A6%81%E7%B4%84%E3%81%97%E3%81%A6',
+                note: '元の文は「この文章を要約して」。`https;//` ではなく `https://` が正しい。'
+              },
+              {
+                label: 'JavaScriptで文章を渡す',
+                code: 'const prompt = `以下のデータを整理して。\\n\\n${text}`;\nconst url = `https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`;\nwindow.open(url, "_blank", "noopener,noreferrer");',
+                note: 'ボタンを押した時に、ページ上の文章をそのままChatGPTへ持っていく基本形。'
+              },
+              {
+                label: 'JSONデータを渡す',
+                code: 'const prompt = `以下のJSONを分析して。\\n\\n${JSON.stringify(data, null, 2)}`;\nwindow.open(`https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`, "_blank", "noopener,noreferrer");',
+                note: '一覧や記録データから「AIに聞く」導線を作る時に使える。'
+              }
+            ],
+            explanation: [
+              {
+                term: 'クエリパラメータ',
+                text: 'URLの `?prompt=...` のような部分。ページを開く時に追加の値を渡す仕組みで、検索語や画面状態などを受け渡す用途に広く使われる。'
+              },
+              {
+                term: 'encodeURIComponent()',
+                text: '日本語、改行、`&`、`?` などをURLの一部として安全に扱える形へ変換するJavaScript関数。文字列をURLへ埋め込む時はほぼ必須。'
+              },
+              {
+                term: 'AIへデータを送る入口として使う',
+                text: 'ページ内の本文、選択中の項目、JSON化した記録などをプロンプトに組み込み、「この内容を要約」「分類して」「質問して」などの指示と一緒にAIへ渡せる。APIを組むほどではない小さな連携に向く。'
+              },
+              {
+                term: 'ChatGPTのURLパラメータは公開APIではない',
+                text: 'OpenAI公式Helpでは、ChatGPTは chatgpt.com の入力欄へプロンプトを入れて使うことや、会話共有リンク `https://chatgpt.com/share/<conversation-ID>` は案内されている。一方、`?prompt=` や `?q=` を外部連携用の正式仕様として説明する公式Helpは確認できないため、将来変わる可能性を前提にする。'
+              }
+            ],
+            tips: [
+              'URLに入れた文字列はブラウザ履歴などに残りうる。個人情報、パスワード、社外秘などをクエリパラメータへ入れない。',
+              'URLは長さに実務上の制約があるため、長文や大量JSONには向かない。短い文章や選択中の1レコード程度が扱いやすい。',
+              '自動送信まで期待せず、「ChatGPTを開いて、入力欄までセットする」導線として設計すると壊れにくい。',
+              'サービス側の仕様変更で `?prompt=` が動かなくなった場合に備えて、「プロンプトをコピー」ボタンも併設すると強い。',
+              '正式なシステム連携、大量処理、結果の自動取得が必要なら、URLパラメータではなくOpenAI APIを使う。'
+            ],
+            sources: [
+              {
+                label: 'OpenAI Help — ChatGPTホームページ',
+                url: 'https://help.openai.com/ja-jp/articles/9125172-the-chatgpt-home-page'
+              },
+              {
+                label: 'OpenAI Help — ChatGPT共有リンクFAQ',
+                url: 'https://help.openai.com/ja-jp/articles/7925741-chatgpt-shared-links-faq'
+              },
+              {
+                label: 'OpenAI Help — 良いプロンプトを作る方法',
+                url: 'https://help.openai.com/en/articles/4936848-how-do-i-create-a-good-prompt-for-an-ai-model-like-gpt4'
+              }
+            ]
+          };
+          const index = items.findIndex(item => item && item.id === entry.id);
+          if (index >= 0) items[index] = entry;
+          else items.unshift(entry);
+          fs.writeFileSync(path, JSON.stringify(items, null, 2) + '\n');
+          NODE
+
+      - name: Commit and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/add-chatgpt-url-prompt-technique.yml
+          git add data/techniques.json
+          git commit -m "Add URL prompt technique"
+          git push
