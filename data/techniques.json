@@ -1,8 +1,8 @@
 [
   {
     "id": "send-data-to-chatgpt-with-url-prompt",
-    "title": "URLからChatGPTにデータを渡す",
-    "summary": "Webページの「AIに聞く」ボタンなどから、短いテキストやJSONをURLエンコードしてChatGPTの入力欄へ渡す。コピペを減らし、ページ上のデータをそのままAIへ持っていく入口を作れる。",
+    "title": "URLやボタンからAIにデータを渡す",
+    "summary": "Webページ上の文章やJSONを、ChatGPT・Claude・Gemini・Perplexityなどへ持っていく導線を作る。URLへ直接埋め込める場合はURLエンコードし、公式なprefill URLがない場合は「コピーしてAIを開く」方式にすると壊れにくい。",
     "category": "Web・開発",
     "tags": [
       "ChatGPT",
@@ -11,10 +11,15 @@
       "prompt",
       "query parameter",
       "JavaScript",
-      "encodeURIComponent"
+      "encodeURIComponent",
+      "Claude",
+      "Gemini",
+      "Perplexity",
+      "AI連携",
+      "clipboard"
     ],
     "updated": "2026-08-19",
-    "quickAnswer": "短いデータなら `https://chatgpt.com/?prompt=...` のようにクエリパラメータへ入れ、JavaScriptでは `encodeURIComponent()` で文字列をURLエンコードして開く。例: `https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`。ただし `?prompt=` / `?q=` はOpenAIの公式Helpで公開仕様として案内されていないため、便利なショートカットとして使い、仕様変更に備える。",
+    "quickAnswer": "短いデータはURLエンコードしてAIへ渡せる。ChatGPTでは `https://chatgpt.com/?prompt=...` のような形が使える場合があるが公開仕様ではない。ClaudeやGeminiのWeb版では、外部サイトから任意のプロンプトをURLだけでprefillする公式仕様は確認できないため、`navigator.clipboard.writeText(prompt)` でコピーしてAIを開く方式が安全。Perplexityの `search?q=` 形式もWebフロントの正式APIとしては保証されないため、壊れたらコピー方式へ戻す。",
     "steps": [
       "AIへ渡したい文章やJSONを1つの文字列にまとめる。例: 「以下のデータを要約して。\n\n」＋JSON.stringify(data)。",
       "その文字列を `encodeURIComponent()` でURLエンコードする。日本語、改行、記号をそのままURLへ入れない。",
@@ -37,6 +42,31 @@
         "label": "JSONデータを渡す",
         "code": "const prompt = `以下のJSONを分析して。\\n\\n${JSON.stringify(data, null, 2)}`;\nwindow.open(`https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
         "note": "一覧や記録データから「AIに聞く」導線を作る時に使える。"
+      },
+      {
+        "label": "ChatGPT版（URLへ埋め込む）",
+        "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nwindow.open(`https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
+        "note": "`?prompt=` は便利だが、OpenAIの公開Helpで正式な外部連携仕様として案内されているものではない。仕様変更に備える。"
+      },
+      {
+        "label": "Claude版（コピーして開く）",
+        "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nawait navigator.clipboard.writeText(prompt);\nwindow.open(\"https://claude.ai/\", \"_blank\", \"noopener,noreferrer\");",
+        "note": "ClaudeのWeb版で任意プロンプトをURLだけでprefillする公式仕様は確認できないため、コピー→Claudeを開く形が堅い。"
+      },
+      {
+        "label": "Gemini版（コピーして開く）",
+        "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nawait navigator.clipboard.writeText(prompt);\nwindow.open(\"https://gemini.google.com/app\", \"_blank\", \"noopener,noreferrer\");",
+        "note": "GeminiのWeb版も、外部サイトからプロンプト本文をURLへ埋め込む正式仕様は確認できない。コピー方式ならUI変更の影響を受けにくい。"
+      },
+      {
+        "label": "Perplexity版（URLへ渡す・非公式扱い）",
+        "code": "const prompt = `以下を調べて。\\n\\n${text}`;\nwindow.open(`https://www.perplexity.ai/search?q=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
+        "note": "Perplexityは質問文をそのまま検索・プロンプトとして扱えるが、`/search?q=` をWeb連携用の正式仕様として保証する公式ドキュメントは確認できない。動かなければコピー方式へ。"
+      },
+      {
+        "label": "複数AI対応の共通関数",
+        "code": "async function openInAI(provider, prompt) {\n  const encoded = encodeURIComponent(prompt);\n  const directUrls = {\n    chatgpt: `https://chatgpt.com/?prompt=${encoded}`,\n    perplexity: `https://www.perplexity.ai/search?q=${encoded}`\n  };\n  if (directUrls[provider]) {\n    window.open(directUrls[provider], \"_blank\", \"noopener,noreferrer\");\n    return;\n  }\n  const homeUrls = {\n    claude: \"https://claude.ai/\",\n    gemini: \"https://gemini.google.com/app\"\n  };\n  await navigator.clipboard.writeText(prompt);\n  window.open(homeUrls[provider], \"_blank\", \"noopener,noreferrer\");\n}",
+        "note": "URL直渡しできるものと、コピー→起動のものを1つの関数で吸収する形。実サービスでは「プロンプトをコピー」ボタンも別に置くとさらに壊れにくい。"
       }
     ],
     "explanation": [
@@ -55,6 +85,18 @@
       {
         "term": "ChatGPTのURLパラメータは公開APIではない",
         "text": "OpenAI公式Helpでは、ChatGPTは chatgpt.com の入力欄へプロンプトを入れて使うことや、会話共有リンク `https://chatgpt.com/share/<conversation-ID>` は案内されている。一方、`?prompt=` や `?q=` を外部連携用の正式仕様として説明する公式Helpは確認できないため、将来変わる可能性を前提にする。"
+      },
+      {
+        "term": "AIごとにURL連携の扱いが違う",
+        "text": "Web版AIは、検索サービスのようにクエリパラメータを公開仕様として提供しているとは限らない。ChatGPTやPerplexityで動くURL形式があっても、外部連携APIと同じ安定性は期待しない。ClaudeやGeminiでは、コピーしてWebアプリを開く方式を基本にすると保守しやすい。"
+      },
+      {
+        "term": "コピー → AIを開く方式",
+        "text": "`navigator.clipboard.writeText(prompt)` で本文をクリップボードへ入れ、対象AIのトップ画面を新しいタブで開く。1回貼り付ける操作は残るが、URL仕様変更に強く、複数AIへ横展開しやすい。"
+      },
+      {
+        "term": "本格連携は各社API",
+        "text": "結果を自動取得したい、大量処理したい、ファイルを安全に渡したい場合は、ChatGPTのショートカットURLではなくOpenAI API、Anthropic API、Gemini API、Perplexity APIなど各社の正式APIを使う。"
       }
     ],
     "tips": [
@@ -62,7 +104,11 @@
       "URLは長さに実務上の制約があるため、長文や大量JSONには向かない。短い文章や選択中の1レコード程度が扱いやすい。",
       "自動送信まで期待せず、「ChatGPTを開いて、入力欄までセットする」導線として設計すると壊れにくい。",
       "サービス側の仕様変更で `?prompt=` が動かなくなった場合に備えて、「プロンプトをコピー」ボタンも併設すると強い。",
-      "正式なシステム連携、大量処理、結果の自動取得が必要なら、URLパラメータではなくOpenAI APIを使う。"
+      "正式なシステム連携、大量処理、結果の自動取得が必要なら、URLパラメータではなくOpenAI APIを使う。",
+      "「ChatGPTに聞く」「Claudeに聞く」「Geminiに聞く」「Perplexityで調べる」のように複数ボタンを並べると、同じデータを目的別に投げ分けられる。",
+      "Claude・Geminiは、プロンプトをクリップボードへコピーしてからAIを開く方式を標準にすると壊れにくい。",
+      "Perplexityは調査・出典確認、Claudeは長文整理、GeminiはGoogle系との相性、ChatGPTは汎用処理、のようにボタン名自体へ用途を入れてもよい。",
+      "URL直渡しが突然動かなくなることを前提に、必ず「プロンプトをコピー」だけの退避導線を残す。"
     ],
     "sources": [
       {
@@ -76,6 +122,22 @@
       {
         "label": "OpenAI Help — 良いプロンプトを作る方法",
         "url": "https://help.openai.com/en/articles/4936848-how-do-i-create-a-good-prompt-for-an-ai-model-like-gpt4"
+      },
+      {
+        "label": "Anthropic Docs — Intro to Claude",
+        "url": "https://docs.anthropic.com/en/docs/welcome"
+      },
+      {
+        "label": "Google AI for Developers — Gemini API",
+        "url": "https://ai.google.dev/gemini-api/docs"
+      },
+      {
+        "label": "Perplexity Help — プロンプトと検索の違い",
+        "url": "https://www.perplexity.ai/help-center/ja/articles/10354937-%E3%83%97%E3%83%AD%E3%83%B3%E3%83%97%E3%83%88%E3%81%A8%E6%A4%9C%E7%B4%A2%E3%81%AE%E9%81%95%E3%81%84%E3%81%AF%E4%BD%95%E3%81%A7%E3%81%99%E3%81%8B"
+      },
+      {
+        "label": "Perplexity Docs — API Quickstart",
+        "url": "https://docs.perplexity.ai/docs/getting-started/quickstart"
       }
     ]
   },
