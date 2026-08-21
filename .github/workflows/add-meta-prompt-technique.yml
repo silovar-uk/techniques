@@ -1,0 +1,94 @@
+name: Add meta prompt articulation technique
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-meta-prompt-technique.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add Technique
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'data/techniques.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const id = 'use-meta-prompts-to-articulate-requirements';
+          if (data.some(item => item.id === id)) process.exit(0);
+
+          const item = {
+            id,
+            number: 'T-010',
+            title: 'メタプロンプトを書かせて、自分の要求を言語化する',
+            summary: 'AIに作業そのものを頼む前に、「次にAIへ渡す指示」を構造化させる。曖昧な感覚を、目的・制約・判断基準・進め方へ分解することで、自分でも気づいていなかった要求を見つける。',
+            category: '思考・学習',
+            tags: ['AI', 'プロンプト', 'メタプロンプト', '言語化', '要件定義', '思考整理'],
+            updated: '2026-08-21',
+            quickAnswer: 'やりたいことがまだ曖昧なときは、AIにすぐ実行させず「この依頼を実行するためのプロンプト自体を、目的・前提・制約・判断基準・手順に分けて書いて」と頼む。返ってきた指示文への違和感を修正すると、自分の要求が具体化していく。',
+            steps: [
+              'まず「なんとなくこうしたい」という未整理の感覚を、そのままAIへ伝える。',
+              '実行はさせず、「次に使う指示文をメタ的・構造的に整理して」と頼む。',
+              '出てきたプロンプトを、目的・前提・制約・判断基準・手順・完成条件に分けて読む。',
+              '「そこまでは求めていない」「こっちの方が重要」と感じた箇所を修正する。違和感を要求発見の材料として使う。',
+              '修正版をもう一度構造化し、十分に意図が見えた段階で実行用プロンプトとして使う。'
+            ],
+            commands: [
+              {
+                label: 'メタプロンプトの基本形',
+                code: 'これから、やりたいことを曖昧な状態のまま伝えます。まだ実行しないでください。\n\n私の意図を、\n・目的\n・前提\n・残したいもの\n・変えたいもの\n・避けたいもの\n・判断基準\n・進め方\n・完成条件\nに分解し、次にそのままAIへ渡せる「メタ的で構造的な実行プロンプト」にしてください。\n\n不明点は勝手に埋めず、仮説として区別してください。特に、私が言葉にできていない要求や、指示同士の矛盾があれば明示してください。',
+                note: '「まず実行しない」を入れると、作業結果ではなく要求の言語化にAIを使いやすい。'
+              }
+            ],
+            explanation: [
+              {
+                term: 'メタプロンプト',
+                text: 'AIに直接成果物を作らせる指示ではなく、その成果物を作るための「指示の設計図」をAIに作らせる使い方。'
+              },
+              {
+                term: '外在化',
+                text: '頭の中にある感覚を一度文章として外へ出す。言葉になったものを見ることで、自分の考えを客観的に修正しやすくなる。'
+              },
+              {
+                term: '違和感を使う',
+                text: 'AIの整理が少し違うと感じた箇所は失敗ではない。その「違う」が、自分が本当に重視している条件を発見する手掛かりになる。'
+              },
+              {
+                term: '要求仕様になる',
+                text: '感覚的な希望が、目的・制約・優先順位・完成条件へ変わると、AIだけでなく人間への依頼や自分の意思決定にも再利用できる。'
+              }
+            ],
+            tips: [
+              '「もっと良くして」のような曖昧な依頼ほど、先にメタプロンプト化すると効く。',
+              'AIが出したプロンプトを完成品だと思わず、自分の違和感を見つけるための叩き台として読む。',
+              '「何をするか」だけでなく「何をしないか」を明文化すると、意図が安定しやすい。',
+              '大きな作業では、計画用プロンプトと実行用プロンプトを分けると途中で目的がずれにくい。',
+              '最終的にはプロンプト作成そのものより、自分の要求が言葉になったことを成果と考える。'
+            ],
+            sources: [],
+            evidence: {
+              level: 'PERSONAL',
+              note: 'AIを要求整理・自己対話の補助として使うための実践モデル。特定の学術理論をそのまま表したものではなく、プロンプト設計時の作業手順として保存する。'
+            }
+          };
+
+          data.unshift(item);
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+          NODE
+
+      - name: Commit Technique and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/add-meta-prompt-technique.yml
+          git add data/techniques.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Add meta prompt articulation technique"
+          git push
