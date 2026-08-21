@@ -3,36 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="「知っている」を「すぐできる」に戻すための個人用フィールドマニュアル。仕事・PC・暮らしの小さな手順を、必要な瞬間にすぐ引ける Techniques。">
+  <meta name="description" content="「知っている」を「すぐできる」に戻すためのPersonal Field Instrument。仕事・PC・暮らしの小さな手順を、必要な瞬間にすぐ引ける Techniques。">
   <meta name="theme-color" content="#f4f2ec">
-  <title>Techniques — Personal Field Manual</title>
+  <title>Techniques — Personal Field Instrument</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=20260819-fieldmanual1">
+  <link rel="stylesheet" href="styles.css?v=20260821-instrument1">
 </head>
 <body>
+  <a class="skip-link" href="#app">本文へ移動</a>
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="#/" aria-label="Techniques トップへ">
         <span class="brand-mark" aria-hidden="true">T</span>
         <span class="brand-copy">
           <strong>Techniques</strong>
-          <small>Personal field manual</small>
+          <small>Personal field instrument</small>
         </span>
       </a>
       <nav class="header-actions" aria-label="サイト操作">
         <span id="techniqueCount" class="header-count" aria-live="polite"></span>
+        <button id="randomTechnique" class="random-technique" type="button" aria-label="Random Techniqueを選ぶ">
+          <span aria-hidden="true">↝</span><b>Random</b>
+        </button>
         <a href="https://github.com/silovar-uk/techniques" target="_blank" rel="noreferrer">GitHub ↗</a>
       </nav>
     </div>
   </header>
 
-  <main id="app" class="app" aria-live="polite"></main>
+  <main id="app" class="app" tabindex="-1"></main>
+  <p id="siteStatus" class="sr-only" aria-live="polite" aria-atomic="true"></p>
 
   <footer class="site-footer">
     <p>Know it. Find it. Do it.</p>
     <p>Small methods for work, devices, body, and daily life.</p>
   </footer>
 
-  <script src="app.js?v=20260819-fieldmanual1" defer></script>
+  <script src="app.js?v=20260821-instrument1" defer></script>
 </body>
 </html>
