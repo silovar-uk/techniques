@@ -1,5 +1,107 @@
 [
   {
+    "id": "use-high-stimulation-electronic-music-to-adjust-arousal",
+    "number": "T-011",
+    "title": "集中できないとき、高刺激の電子音楽で覚醒レベルを調整してみる",
+    "summary": "静かな環境だと逆に頭が散るとき、歌詞の少ない高BPM・反復的な電子音楽を「刺激量の調整ツール」として試す。ADHDにEDMが効くと断定せず、自分の集中・気分・疲労がどう変わるかを短時間で比較する。",
+    "category": "思考・学習",
+    "tags": [
+      "ADHD",
+      "集中",
+      "音楽",
+      "EDM",
+      "テクノ",
+      "覚醒",
+      "作業用BGM",
+      "セルフマネジメント"
+    ],
+    "updated": "2026-08-22",
+    "quickAnswer": "静かすぎると頭が散るときは、歌詞の少ない反復的な電子音楽を10〜20分だけ試す。まずは Ben Klock「Subzero」→ Charlotte de Witte「Doppler」→ Amelie Lens「In Silence」あたり。刺激を強めたいなら Noisia「Collider」、少し落ち着かせたいなら Bicep「Glue」。効くかどうかは人によるので、無音と比べて集中・疲労・気分を自分で確認する。",
+    "steps": [
+      "集中できない、眠い、頭が散るなど「刺激が足りない感じ」があるかを確認する。",
+      "最初は歌詞の少ない、一定のビートが続く曲を1〜2曲だけ選ぶ。音量を上げすぎず、低音感と大音量を混同しない。",
+      "10〜20分だけ同じ種類の作業をして、集中度・別タブを開いた回数・疲労・気分をメモする。",
+      "無音、環境音、軽いBGM、高刺激の電子音楽を別日に比較する。",
+      "合う場合は「ジャンル名」ではなく、BPM、反復性、低音、歌詞の有無、音量のどれが効いていそうかを残す。",
+      "読解や文章作成など言語負荷の高い作業で邪魔になるなら、歌詞ありや刺激の強すぎる曲を避ける。"
+    ],
+    "commands": [],
+    "explanation": [
+      {
+        "term": "覚醒レベルの自己調整",
+        "text": "背景音楽は、人によっては退屈な作業中の刺激不足を補い、mind-wanderingを減らす方向に働く可能性がある。ただし効果は個人差・課題差が大きい。"
+      },
+      {
+        "term": "EDMそのものが効くわけではない",
+        "text": "効いている可能性があるのは、高BPM、反復、低音、歌詞の少なさ、予測可能な構造、本人の好みなど。EDMというジャンル名を医学的な効果と結びつけない。"
+      },
+      {
+        "term": "ドーパミン",
+        "text": "好きな音楽や強い音楽的快感に伴って線条体でドーパミン放出が観察された研究はあるが、「EDMがADHDのドーパミン不足を補う」という意味ではない。"
+      },
+      {
+        "term": "逆効果もある",
+        "text": "ADHDでは無関係な音により短期記憶課題がより妨害されるという研究もある。複雑な課題や言語作業では、音楽が邪魔になる可能性もある。"
+      }
+    ],
+    "tips": [
+      "まず試すなら Ben Klock「Subzero」。一定の推進力があり、歌詞がないので作業用の基準曲にしやすい。",
+      "キックを強めたいなら Charlotte de Witte「Doppler」や Amelie Lens「In Silence」。",
+      "さらに刺激を上げたいなら Noisia「Collider」。かなり情報量が多いので単純作業向けから試す。",
+      "暗く重い質感が欲しいなら Gesaffelstein「Pursuit」。",
+      "刺激を少し落としつつ反復に乗りたいなら Bicep「Glue」。",
+      "Ben Klock「Subzero」はShazam上で125 BPMとされており、一定の反復を試す基準として使いやすい。",
+      "イヤホン・ヘッドホンでは大音量を避ける。重いキック感は音量を上げなくても得られる。",
+      "これは治療ではなく、作業環境を調整するためのセルフ実験として扱う。"
+    ],
+    "sources": [
+      {
+        "label": "Systematic review — Exploring the Intersection of ADHD and Music (2024)",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11762814/"
+      },
+      {
+        "label": "PubMed — Preferred background music, attention and arousal",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38664478/"
+      },
+      {
+        "label": "PubMed — Music and dopamine release",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/21217764/"
+      },
+      {
+        "label": "PubMed — Irrelevant sound effect in adult ADHD",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/23893530/"
+      },
+      {
+        "label": "Ben Klock — Subzero",
+        "url": "https://benklock.bandcamp.com/track/subzero"
+      },
+      {
+        "label": "Charlotte de Witte — Doppler",
+        "url": "https://www.youtube.com/watch?v=AS8Q_5knkrg"
+      },
+      {
+        "label": "Amelie Lens — In Silence",
+        "url": "https://www.youtube.com/watch?v=Rk0cidJJgXw"
+      },
+      {
+        "label": "Noisia — Collider",
+        "url": "https://www.youtube.com/watch?v=8Pb-MQCPQsc"
+      },
+      {
+        "label": "Gesaffelstein — Pursuit",
+        "url": "https://www.youtube.com/watch?v=1ExdigjJmaA"
+      },
+      {
+        "label": "Bicep — Glue",
+        "url": "https://www.youtube.com/watch?v=A7ZxRs45tTg"
+      }
+    ],
+    "evidence": {
+      "level": "SUPPORTED",
+      "note": "ADHDと音楽・背景刺激の関係には支持する研究があるが、EDMや重いキックに特異的な効果は確立していない。個人差と課題差が大きいため、「自分の覚醒レベルを調整するセルフ実験」として扱う。"
+    }
+  },
+  {
     "id": "use-meta-prompts-to-articulate-requirements",
     "number": "T-010",
     "title": "メタプロンプトを書かせて、自分の要求を言語化する",
