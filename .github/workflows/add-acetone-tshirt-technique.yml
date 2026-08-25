@@ -1,0 +1,82 @@
+name: Add acetone T-shirt print repair technique
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-acetone-tshirt-technique.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  add-technique:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add technique
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'data/techniques.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const entry = {
+            id: 'reduce-cracks-in-tshirt-print-with-acetone',
+            number: 'T-013',
+            title: 'Tシャツのひび割れたプリントを、アセトンで目立ちにくくする',
+            summary: '細かくひび割れたTシャツのプリントは、条件によっては100%アセトンを少量使うことで表面がなじみ、割れが目立ちにくくなる場合がある。ただしプリント方式・生地・染料によっては悪化するため、素材確認と小範囲テストを前提にする。',
+            category: '暮らし',
+            tags: ['Tシャツ','衣類','プリント','ひび割れ','アセトン','除光液','補修','メンテナンス','洗濯'],
+            updated: '2026-08-25',
+            quickAnswer: '細かなプリント割れなら、素材表示を確認したうえで、目立たない場所から100%アセトンをごく少量だけ試す方法がある。綿球などで擦らず軽く押さえると、プリント表面が少しなじんで割れが目立ちにくくなる場合がある。ただし、アセテート／トリアセテートを含む生地には使わない。色移り・べたつき・表面崩れが出たら即中止。換気の良い火気のない場所で行う。',
+            steps: [
+              'まず症状を確認する。細かな表面クラックなら候補。プリントが大きく剥離している、欠損している、熱転写シート自体が浮いている場合は、アセトン補修の対象外と考える。',
+              '洗濯表示と素材表示を確認する。アセテート／トリアセテートを含む場合はアセトンを使わない。プリント方式が不明なら、失敗する可能性がある前提で扱う。',
+              '使用する液体の成分表示を確認する。除光液は製品によって成分が異なるため、「除光液なら何でも同じ」と考えない。修復例では100%アセトンが使われている。',
+              '換気の良い場所で、火花・裸火・喫煙などの着火源をなくす。アセトンは引火性が高く、蒸気で眼や気道を刺激することがある。',
+              'プリントの端や目立たない小さな範囲で先に試す。綿球やコットンに少量を含ませ、擦らず軽く押さえる。色移りや表面の変化を確認する。',
+              '問題がなければ、ひび割れ部分を小範囲ずつ処理する。大量に染み込ませたり、強く擦ったりしない。',
+              'プリント色が大きく移る、べたつく、表面が崩れる、生地が変色・変形する場合はすぐ中止する。',
+              '十分に揮発させる。熱を加える補修例もあるが、プリントや生地は熱に弱い場合があるため、アイロンを使う場合も衣類の洗濯表示・素材条件を優先し、高温を一律の正解にしない。',
+              '処理後は、今後の割れ進行を抑えるため、洗濯表示を優先しつつ、裏返し洗い・強い摩擦の回避・高温乾燥の回避を意識する。'
+            ],
+            commands: [],
+            explanation: [
+              {term:'なぜ見た目が改善することがある？', text:'アセトンは溶剤なので、一部のプリント材料では表面をわずかに軟化させ、細かな割れの縁がなじんで見える場合がある。ただし、この作用そのものがプリントを溶かして傷める原因にもなる。'},
+              {term:'「復活」ではなく「目立ちにくくする」', text:'欠けたプリント材料を元に戻す方法ではない。細かなクラックの見え方が軽減する場合がある、という程度に捉える。長期耐久性まで保証された標準修復法ではない。'},
+              {term:'除光液と100%アセトン', text:'市販の除光液は、アセトン以外の成分を含むものや、そもそもアセトンを含まないものもある。実例で使われている100%アセトンと、一般的な除光液を同一視しない。'},
+              {term:'アセテートはNG', text:'University of Georgiaの繊維ケア資料では、アセテート繊維はアセトンによって破壊されるとされている。トリアセテートもアセトンを避ける。'},
+              {term:'プリント方式で結果が違う', text:'スクリーンプリント、熱転写、DTF、昇華などは材料と構造が異なる。方式が分からない場合に「必ず効く」と判断しない。'}
+            ],
+            tips: [
+              '成功判定は「新品同様になったか」ではなく、「ひび割れが少し目立ちにくくなったか」にする。',
+              '最初から思い入れの強いTシャツの中央部分で試さない。端や目立たない場所から始める。',
+              'アセトンは引火性が高い。ドライヤー、コンロ、ストーブ、喫煙など火気・高温源の近くで使わない。',
+              '蒸気を吸い込まないよう換気し、眼や皮膚への接触を避ける。製品ラベルやSDSの注意事項を優先する。',
+              'iFixitの修復例では、100%アセトンを含ませた綿球を割れ部分へ当て、擦らず処理している。これは一つの実践例であり、すべてのプリントでの安全性や耐久性を保証するものではない。',
+              '熱で仕上げる手順を併用する場合も、衣類やプリントの耐熱条件を超えない。高温アイロンを万能手順として保存しない。'
+            ],
+            sources: [
+              {label:'iFixit — How to Repair Cracks in T-Shirt Print', url:'https://www.ifixit.com/Guide/How+to+Repair+Cracks+in+T-Shirt+Print/178337'},
+              {label:'University of Georgia — Understand Your Fibers', url:'https://site.extension.uga.edu/textiles/textile-basics/understand-your-fibers/'},
+              {label:'University of Georgia — Textile Care Products: Acetone', url:'https://site.extension.uga.edu/textiles/care/products/'},
+              {label:'厚生労働省 職場のあんぜんサイト — アセトン SDS', url:'https://anzeninfo.mhlw.go.jp/anzen/gmsds/67-64-1.html'}
+            ],
+            evidence: {
+              level: 'SUPPORTED',
+              note: 'アセトンの溶剤としての性質、アセテート繊維への悪影響、引火性・刺激性には根拠がある。一方、経年劣化したTシャツプリントの長期的な修復法として確立された標準手順とは言えず、iFixit等の実践例を参考にした条件付きの補修方法として扱う。'
+            }
+          };
+          const idx = data.findIndex(x => x && x.id === entry.id);
+          if (idx >= 0) data[idx] = {...data[idx], ...entry};
+          else data.unshift(entry);
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+          NODE
+      - name: Commit changes and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/add-acetone-tshirt-technique.yml
+          git add data/techniques.json
+          git commit -m "Add acetone T-shirt print repair technique"
+          git push
