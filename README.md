@@ -32,7 +32,9 @@ UIの基本ルール：
 - 弱くしても意味は消さない。特にEvidenceはmobileでも原則ラベルを残す
 - 戻る操作では、scroll位置だけでなくkeyboard focusの文脈も復元する
 
-CSSは `styles.css` が基本レイアウト、`refinements.css` が横断的なQuiet Systemの移行レイヤーです。`refinements.css` に一箇所専用の例外を増やさず、確定したルールは将来の専用整理コミットで `styles.css` へ吸収します。
+CSSは **`styles.css` を唯一の正本** とします。確定済みのQuiet UIルールを別ファイルで上書きせず、componentの元selectorとmedia queryへ直接記述します。新しいCSSファイルを「調整用レイヤー」として常設しません。
+
+assetのcache versionは、見た目・挙動のまとまりごとに `YYYYMMDD-短いフェーズ名+連番`（例：`20260826-core1`）の形で更新します。変更していないassetのversionは無理に動かしません。
 
 ## カテゴリ
 
