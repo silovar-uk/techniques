@@ -4,6 +4,7 @@ const siteStatus = document.querySelector('#siteStatus');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 let techniques = [];
+let categoryOrder = [];
 let activeCategory = 'すべて';
 let searchQuery = '';
 let lastRenderedHash = location.hash;
@@ -11,11 +12,13 @@ let lastSelectedId = readSession('techniques:last-selected') || '';
 let homeScrollPosition = Number(readSession('techniques:home-scroll')) || 0;
 let pendingRandomId = '';
 let pendingSearchFocus = false;
+let pendingReturnFocus = false;
+let pendingArticleFocus = false;
 let routeScheduled = false;
 let searchAnnouncementTimer = 0;
 let copyResetTimer = 0;
+let lastInteractionWasKeyboard = false;
 const searchIndex = new Map();
-const techniqueNumbers = new Map();
 
 const escapeHtml = (value = '') => String(value)
   .replaceAll('&', '&amp;')
@@ -51,9 +54,7 @@ function announce(message) {
 function formatDate(value) {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('ja-JP', {
-    month: 'short', day: 'numeric'
-  }).format(date);
+  return new Intl.DateTimeFormat('ja-JP', { month: 'short', day: 'numeric' }).format(date);
 }
 
 function formatSinceDate() {
@@ -61,21 +62,11 @@ function formatSinceDate() {
   if (!values.length) return '';
   const date = new Date(`${values[0]}T00:00:00`);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short', year: 'numeric'
-  }).format(date);
-}
-
-function buildTechniqueNumbers() {
-  const creationOrder = [...techniques]
-    .sort((a, b) => String(a.updated).localeCompare(String(b.updated)) || String(a.id).localeCompare(String(b.id)));
-  creationOrder.forEach((item, index) => {
-    techniqueNumbers.set(item.id, item.number || `T-${String(index + 1).padStart(3, '0')}`);
-  });
+  return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(date);
 }
 
 function getTechniqueNumber(item) {
-  return techniqueNumbers.get(item.id) || item.number || 'T-000';
+  return item.number || 'T-000';
 }
 
 function getEvidence(item) {
@@ -111,6 +102,11 @@ function getFilteredItems() {
   });
 }
 
+function getAvailableCategories() {
+  const used = new Set(techniques.map(item => item.category));
+  return categoryOrder.filter(category => used.has(category));
+}
+
 function renderEvidenceBadge(item, compact = false) {
   const evidence = getEvidence(item);
   if (!evidence) return '';
@@ -141,7 +137,7 @@ function seededRandom(seed) {
   };
 }
 
-function renderFieldMark(item, compact = false) {
+function renderFieldMark(item) {
   const evidence = getEvidence(item);
   const random = seededRandom(hashString(`${item.id}|${item.category}|${evidence?.label || ''}`));
   const points = Array.from({ length: 4 }, (_, index) => ({
@@ -153,7 +149,7 @@ function renderFieldMark(item, compact = false) {
   const guideX = Math.round(16 + random() * 31);
   const guideY = Math.round(16 + random() * 31);
   return `
-    <svg class="field-mark${compact ? ' is-compact' : ''}" viewBox="0 0 64 64" aria-hidden="true" focusable="false" data-evidence="${escapeHtml(evidence?.className || 'none')}">
+    <svg class="field-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false" data-evidence="${escapeHtml(evidence?.className || 'none')}">
       <path class="mark-frame" d="M8 16V8H16 M48 8H56V16 M56 48V56H48 M16 56H8V48" />
       <path class="mark-guide" d="M${guideX} 8V56 M8 ${guideY}H56" />
       <path class="mark-primary" d="${path}" />
@@ -177,7 +173,6 @@ function renderTechniqueRow(item) {
         <p>${escapeHtml(item.summary)}</p>
         ${tags.length ? `<div class="row-tags">${tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
       </div>
-      <div class="row-mark">${renderFieldMark(item, true)}</div>
       <div class="row-side">
         <time datetime="${escapeHtml(item.updated)}">${escapeHtml(formatDate(item.updated))}</time>
         <span class="row-arrow" aria-hidden="true">↗</span>
@@ -206,31 +201,20 @@ function getSearchReadout(items) {
 
 function updateSearchReadout(items, announceChange = true) {
   const readout = document.querySelector('#searchReadout');
-  const shell = document.querySelector('.command-search');
   if (readout) readout.textContent = getSearchReadout(items);
-  if (shell) {
-    shell.style.setProperty('--match-ratio', String(techniques.length ? items.length / techniques.length : 0));
-    shell.classList.toggle('has-query', Boolean(searchQuery.trim()));
-  }
   if (!announceChange) return;
   window.clearTimeout(searchAnnouncementTimer);
   searchAnnouncementTimer = window.setTimeout(() => {
     announce(searchQuery.trim()
       ? `${items.length}件のTechniqueが見つかりました。`
       : `${items.length}件のTechniqueを表示しています。`);
-  }, 220);
+  }, 400);
 }
 
-function updateLibrary(animate = true) {
+function updateLibrary() {
   const items = getFilteredItems();
   const host = document.querySelector('#libraryResults');
   if (!host) return;
-  const previousRects = new Map();
-  if (animate && !reduceMotion.matches) {
-    host.querySelectorAll('.technique-row').forEach(row => {
-      previousRects.set(row.dataset.techniqueId, row.getBoundingClientRect());
-    });
-  }
   host.innerHTML = renderTechniqueResults(items);
   const isFiltered = Boolean(searchQuery.trim()) || activeCategory !== 'すべて';
   const eyebrow = document.querySelector('#libraryEyebrow');
@@ -245,49 +229,31 @@ function updateLibrary(animate = true) {
     button.classList.toggle('is-active', active);
     button.setAttribute('aria-pressed', String(active));
   });
-  if (!animate || reduceMotion.matches || !Element.prototype.animate) return;
-  host.querySelectorAll('.technique-row').forEach(row => {
-    const previous = previousRects.get(row.dataset.techniqueId);
-    if (!previous) {
-      row.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 100, easing: 'ease-out' });
-      return;
-    }
-    const next = row.getBoundingClientRect();
-    const deltaY = previous.top - next.top;
-    if (Math.abs(deltaY) < 1) return;
-    row.animate([
-      { transform: `translateY(${deltaY}px)`, opacity: 0.88 },
-      { transform: 'translateY(0)', opacity: 1 }
-    ], { duration: 140, easing: 'cubic-bezier(.2,.7,.2,1)' });
-  });
 }
 
 function bindHomeEvents() {
   const input = document.querySelector('#search');
   input?.addEventListener('input', event => {
     searchQuery = event.target.value;
-    updateLibrary(true);
+    updateLibrary();
   });
   input?.addEventListener('focus', () => {
-    document.querySelector('.command-search')?.classList.add('is-engaged');
     const readout = document.querySelector('#searchReadout');
     if (readout && !searchQuery.trim()) readout.textContent = `SEARCH ${getFilteredItems().length} RECORDS`;
   });
-  input?.addEventListener('blur', () => {
-    document.querySelector('.command-search')?.classList.remove('is-engaged');
-    updateSearchReadout(getFilteredItems(), false);
-  });
+  input?.addEventListener('blur', () => updateSearchReadout(getFilteredItems(), false));
   document.querySelectorAll('[data-category]').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', event => {
       activeCategory = button.dataset.category;
-      updateLibrary(true);
+      updateLibrary();
+      event.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
     });
   });
 }
 
 function renderHome() {
   document.title = 'Techniques — Personal Field Instrument';
-  const categories = ['すべて', ...new Set(techniques.map(item => item.category))];
+  const categories = ['すべて', ...getAvailableCategories()];
   const items = getFilteredItems();
   const since = formatSinceDate();
   const isFiltered = Boolean(searchQuery.trim()) || activeCategory !== 'すべて';
@@ -303,7 +269,7 @@ function renderHome() {
         <span><strong>${categories.length - 1}</strong> CATEGORIES</span>
         ${since ? `<span>SINCE <strong>${escapeHtml(since)}</strong></span>` : ''}
       </div>
-      <div class="command-search" role="search" style="--match-ratio:${techniques.length ? items.length / techniques.length : 0}">
+      <div class="command-search" role="search">
         <span class="search-icon" aria-hidden="true">⌕</span>
         <input id="search" class="search-box" type="search" autocomplete="off"
           placeholder="何をしたい？  MOV / Claude / 不安 / 発声…"
@@ -337,12 +303,20 @@ function renderHome() {
     window.scrollTo({ top: homeScrollPosition, behavior: 'auto' });
     if (pendingSearchFocus) {
       pendingSearchFocus = false;
+      pendingReturnFocus = false;
       document.querySelector('#search')?.focus({ preventScroll: true });
+      return;
     }
     if (pendingRandomId) {
       const id = pendingRandomId;
       pendingRandomId = '';
+      pendingReturnFocus = false;
       revealRandomTechnique(id);
+      return;
+    }
+    if (pendingReturnFocus && lastSelectedId) {
+      pendingReturnFocus = false;
+      document.querySelector(`[data-technique-id="${CSS.escape(lastSelectedId)}"]`)?.focus({ preventScroll: true });
     }
   });
 }
@@ -369,19 +343,15 @@ function bindCopyEvents(item) {
     button.addEventListener('click', async () => {
       const command = item.commands[Number(button.dataset.copy)]?.code;
       if (!command) return;
-      const commandBlock = button.closest('.command');
       window.clearTimeout(copyResetTimer);
       try {
         await navigator.clipboard.writeText(command);
         button.textContent = 'COPIED ✓';
         button.setAttribute('aria-label', `${button.closest('.command-head')?.querySelector('span')?.textContent || 'コマンド'}をコピーしました`);
-        commandBlock?.classList.remove('is-copied');
-        requestAnimationFrame(() => commandBlock?.classList.add('is-copied'));
         announce('コマンドをコピーしました。');
         copyResetTimer = window.setTimeout(() => {
           button.textContent = 'COPY';
           button.setAttribute('aria-label', `${button.dataset.copyLabel || 'コマンド'}をコピー`);
-          commandBlock?.classList.remove('is-copied');
         }, 1200);
       } catch {
         button.textContent = 'COPY FAILED';
@@ -399,7 +369,7 @@ function renderArticle(item) {
   document.title = `${item.title} — Techniques`;
   const evidence = getEvidence(item);
   app.innerHTML = `
-    <article class="article">
+    <article class="article" aria-labelledby="articleTitle">
       <div class="article-utility">
         <a class="back" href="#/">← Library</a>
         <div class="article-code"><span>${escapeHtml(getTechniqueNumber(item))}</span>${renderEvidenceBadge(item)}</div>
@@ -408,7 +378,7 @@ function renderArticle(item) {
         <div class="article-header-grid">
           <div class="article-heading-copy">
             <p class="eyebrow">${escapeHtml(item.category)}</p>
-            <h1>${escapeHtml(item.title)}</h1>
+            <h1 id="articleTitle" tabindex="-1">${escapeHtml(item.title)}</h1>
           </div>
           <div class="article-mark">${renderFieldMark(item)}</div>
         </div>
@@ -425,7 +395,13 @@ function renderArticle(item) {
     </article>
   `;
   bindCopyEvents(item);
-  requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }));
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    if (pendingArticleFocus) {
+      pendingArticleFocus = false;
+      document.querySelector('#articleTitle')?.focus({ preventScroll: true });
+    }
+  });
 }
 
 function renderNotFound() {
@@ -434,9 +410,13 @@ function renderNotFound() {
 }
 
 function route() {
+  const previousHash = lastRenderedHash;
   const path = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
   lastRenderedHash = location.hash;
   if (!path) {
+    if (previousHash && previousHash !== '#/' && lastInteractionWasKeyboard && !pendingSearchFocus && !pendingRandomId) {
+      pendingReturnFocus = true;
+    }
     renderHome();
     return;
   }
@@ -481,8 +461,8 @@ function saveHomePosition() {
 }
 
 function chooseRandomTechnique() {
-  const pool = location.hash && location.hash !== '#/' ? techniques : getFilteredItems();
-  const candidates = pool.length ? pool : techniques;
+  const filtered = getFilteredItems();
+  const candidates = filtered.length ? filtered : techniques;
   if (!candidates.length) return null;
   const alternatives = candidates.length > 1 ? candidates.filter(item => item.id !== lastSelectedId) : candidates;
   return alternatives[Math.floor(Math.random() * alternatives.length)] || candidates[0];
@@ -496,14 +476,16 @@ function revealRandomTechnique(id) {
   document.querySelectorAll('.is-random-hit').forEach(element => element.classList.remove('is-random-hit'));
   row.classList.add('is-random-hit');
   row.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
-  window.setTimeout(() => row.focus({ preventScroll: true }), reduceMotion.matches ? 0 : 180);
-  window.setTimeout(() => row.classList.remove('is-random-hit'), reduceMotion.matches ? 500 : 900);
+  window.setTimeout(() => row.focus({ preventScroll: true }), reduceMotion.matches ? 0 : 160);
+  window.setTimeout(() => row.classList.remove('is-random-hit'), reduceMotion.matches ? 450 : 700);
   announce(`Random Technique。${getTechniqueNumber(item)}、${item.title}`);
 }
 
 function handleRandom() {
   const item = chooseRandomTechnique();
   if (!item) return;
+  pendingReturnFocus = false;
+  pendingArticleFocus = false;
   if (location.hash && location.hash !== '#/') {
     pendingRandomId = item.id;
     navigateToHash('#/');
@@ -514,11 +496,15 @@ function handleRandom() {
 
 async function init() {
   try {
-    const response = await fetch('data/techniques.json', { cache: 'no-store' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    techniques = await response.json();
-    buildTechniqueNumbers();
-    techniques.sort((a, b) => String(b.updated).localeCompare(String(a.updated)) || String(b.number || '').localeCompare(String(a.number || '')));
+    const [techniqueResponse, categoryResponse] = await Promise.all([
+      fetch('data/techniques.json', { cache: 'no-store' }),
+      fetch('data/categories.json', { cache: 'no-store' })
+    ]);
+    if (!techniqueResponse.ok) throw new Error(`Techniques HTTP ${techniqueResponse.status}`);
+    if (!categoryResponse.ok) throw new Error(`Categories HTTP ${categoryResponse.status}`);
+    techniques = await techniqueResponse.json();
+    categoryOrder = await categoryResponse.json();
+    techniques.sort((a, b) => String(b.updated).localeCompare(String(a.updated)) || String(b.number).localeCompare(String(a.number)));
     techniques.forEach(searchableText);
     if (techniqueCount) techniqueCount.textContent = `${techniques.length} ITEMS`;
     document.querySelector('#randomTechnique')?.addEventListener('click', handleRandom);
@@ -528,6 +514,14 @@ async function init() {
     app.innerHTML = '<div class="empty">データを読み込めへんかった。ページを再読み込みしてみて。</div>';
   }
 }
+
+document.addEventListener('pointerdown', () => {
+  lastInteractionWasKeyboard = false;
+}, true);
+
+document.addEventListener('keydown', () => {
+  lastInteractionWasKeyboard = true;
+}, true);
 
 document.addEventListener('click', event => {
   const link = event.target.closest('a[href^="#/"]');
@@ -541,7 +535,11 @@ document.addEventListener('click', event => {
     });
     lastSelectedId = id;
     writeSession('techniques:last-selected', id);
+    pendingArticleFocus = lastInteractionWasKeyboard;
+    pendingReturnFocus = false;
     link.classList.add('is-transition-target');
+  } else if (location.hash && location.hash !== '#/' && !pendingSearchFocus && !pendingRandomId) {
+    pendingReturnFocus = lastInteractionWasKeyboard;
   }
   navigateToHash(link.getAttribute('href'));
 });
@@ -552,18 +550,19 @@ window.addEventListener('keydown', event => {
   if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
     event.preventDefault();
     pendingSearchFocus = true;
+    pendingReturnFocus = false;
     if (location.hash && location.hash !== '#/') {
       homeScrollPosition = 0;
       writeSession('techniques:home-scroll', 0);
       navigateToHash('#/');
-    }
-    else {
+    } else {
       pendingSearchFocus = false;
       document.querySelector('#search')?.focus();
     }
   }
   if (event.key === 'Escape' && location.hash && location.hash !== '#/') {
     event.preventDefault();
+    pendingReturnFocus = true;
     navigateToHash('#/');
   }
 });

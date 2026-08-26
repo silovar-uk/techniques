@@ -29,12 +29,16 @@ UIの基本ルール：
 - shadow・blur・pill・animationは役割が説明できる場合だけ使う
 - 文字サイズ・weight・spacing・radiusの種類を増やしすぎない
 - キーボードfocusと `prefers-reduced-motion` を維持する
+- 弱くしても意味は消さない。特にEvidenceはmobileでも原則ラベルを残す
+- 戻る操作では、scroll位置だけでなくkeyboard focusの文脈も復元する
 
-`styles.css` が基本レイアウト、`refinements.css` が横断的なQuiet Systemの最終ルールです。
+CSSは `styles.css` が基本レイアウト、`refinements.css` が横断的なQuiet Systemの移行レイヤーです。`refinements.css` に一箇所専用の例外を増やさず、確定したルールは将来の専用整理コミットで `styles.css` へ吸収します。
 
 ## カテゴリ
 
-カテゴリは細分化しすぎず、大きな用途で分けます。
+カテゴリの順序と許可値は `data/categories.json` を唯一の正本にします。
+
+現在の順序：
 
 - PC・スマホ
 - 動画・音声
@@ -48,7 +52,7 @@ UIの基本ルール：
 - 文章・表現
 - その他
 
-必要になった時点で追加・整理します。カテゴリを増やした場合は `scripts/validate-techniques.mjs` の許可リストも更新します。
+カテゴリを増減・並べ替えするときは `data/categories.json` だけを編集します。表示側とvalidatorは同じファイルを参照します。
 
 ## Techniqueを追加する
 
@@ -60,7 +64,7 @@ UIの基本ルール：
 - `number`: `T-001` 形式の一意なTechnique番号
 - `title`: やりたいことをそのまま書く
 - `summary`: 一覧用の短い説明
-- `category`: 大分類
+- `category`: `data/categories.json` に存在する大分類
 - `tags`: 検索補助
 - `updated`: `YYYY-MM-DD`
 - `quickAnswer`: 最初に見せる結論
@@ -80,10 +84,11 @@ node scripts/validate-techniques.mjs
 
 検証するもの：
 
+- `data/categories.json` が配列で、重複がないか
 - JSONとして読めるか
 - 必須fieldがあるか
 - `id` / `number` が重複していないか
-- categoryが許可済みか
+- categoryが正本に存在するか
 - 日付形式が正しいか
 - commands / explanation / sources等の構造が正しいか
 - source URLが `http` / `https` か
@@ -91,11 +96,14 @@ node scripts/validate-techniques.mjs
 
 `main` へpushするとGitHub Actionsでも同じ検証を行い、エラーがある場合はPagesへdeployしません。
 
-## 最初のTechnique
+## Interactionの原則
 
-- MOVファイルから音声だけ抜く
-  - FFmpegでMP3へ変換
-  - 再エンコードせず音声のみコピーする方法も掲載
+- 検索結果の並び替えでposition animationを使わない
+- Randomは現在の検索・カテゴリ文脈を優先する
+- `/` で検索へ移動、`Escape` でLibraryへ戻る操作を維持する
+- keyboardでTechniqueを開いた場合、Detailの見出しへfocusを移す
+- keyboardでLibraryへ戻った場合、直前のTechnique rowへfocusを戻す
+- Copy feedbackは `COPY → COPIED ✓` の文字変化を基本とし、意味のない演出用stateを持たない
 
 ## GitHub Pages
 
@@ -104,6 +112,8 @@ node scripts/validate-techniques.mjs
 公開経路はシンプルに保ちます。
 
 ```text
+data/categories.json
+        +
 data/techniques.json
         ↓
 validation

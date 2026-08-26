@@ -1,22 +1,16 @@
 /*
  * Quiet System refinement layer
  *
- * Keep information density. Reduce visual noise. Prefer fewer, repeatable rules.
- * Base component layout remains in styles.css; cross-component design rules live here.
+ * Temporary cross-component rules while the base stylesheet is being consolidated.
+ * Do not add one-off component exceptions here.
  */
 
 :root {
   --space-1: 4px;
   --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --motion-fast: 140ms;
-  --focus-ring: 0 0 0 2px rgba(24, 79, 66, .10);
 }
 
 body {
@@ -24,7 +18,6 @@ body {
   font-weight: 400;
 }
 
-/* Header: keep it sticky, remove the glass effect. */
 .site-header {
   background: rgba(244, 242, 236, .97);
   backdrop-filter: none;
@@ -43,7 +36,6 @@ body {
 .random-technique span { transition: transform var(--motion-fast) ease; }
 .random-technique:hover span { transform: translateX(1px); }
 
-/* Typography: fewer weights, less aggressive Japanese tracking. */
 .eyebrow {
   font-size: 10px;
   font-weight: 700;
@@ -69,24 +61,28 @@ body {
 .article-meta { font-size: 10px; }
 .row-meta { font-weight: 600; }
 .section-label span {
+  color: var(--faint);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: .10em;
 }
 .site-footer { font-size: 10px; }
 
-/* Search: one clear surface and one clear focus state. */
 .command-search {
   border-radius: var(--radius-md);
   box-shadow: none;
-  transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+  transition: border-color var(--motion-fast) ease;
 }
 .command-search::after { display: none; }
 .command-search:focus-within {
   border-color: var(--accent);
-  box-shadow: var(--focus-ring);
+  box-shadow: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
+.search-icon { font-size: 22px; }
 .search-readout {
+  color: var(--faint);
   font-size: 9px;
   font-weight: 600;
 }
@@ -96,7 +92,6 @@ body {
 }
 .search-hint { font-size: 10px; }
 
-/* Filters behave like an index, not a row of pills. */
 .filters { gap: var(--space-1); }
 .chip {
   position: relative;
@@ -114,13 +109,14 @@ body {
   box-shadow: inset 0 -1px 0 var(--ink);
 }
 
-/* Library: keep density, remove motion and decorative duplication. */
 .technique-row {
+  grid-template-columns: 64px minmax(0, 1fr) 52px;
+  gap: 16px;
   transition: background var(--motion-fast) ease;
 }
 .row-tags {
   gap: 0;
-  margin-top: var(--space-2);
+  margin-top: 6px;
 }
 .row-tags span {
   border-radius: 0;
@@ -134,7 +130,6 @@ body {
   margin: 0 6px;
   color: var(--line-strong);
 }
-.row-mark { display: none; }
 .row-side time { font-size: 10px; }
 .row-arrow {
   opacity: .45;
@@ -174,14 +169,30 @@ body {
   .technique-row:active { transform: none; }
 }
 
-/* Article: preserve emphasis without turning sections into cards. */
+.article-header-grid {
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 22px;
+}
+.article-mark {
+  width: 92px;
+  height: 92px;
+  opacity: .8;
+}
 .answer-box {
   border: 0;
   border-left: 2px solid var(--accent);
   border-radius: 0;
   background: rgba(223, 236, 231, .58);
 }
-.notes-section { border-radius: var(--radius-md); }
+.notes-section {
+  padding-left: 0;
+  padding-right: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
 .command,
 .copy-btn { border-radius: var(--radius-sm); }
 .command::after,
@@ -190,7 +201,6 @@ body {
 .copy-btn { font-size: 10px; }
 .copy-btn { font-weight: 600; }
 
-/* Focus stays explicit; quiet should never mean invisible. */
 .chip:focus-visible,
 .copy-btn:focus-visible,
 .back:focus-visible,
@@ -204,18 +214,43 @@ body {
 @media (max-width: 760px) {
   .manual-intro-copy > p:last-child { font-size: 11px; }
   .growth-record { font-size: 9px; }
+  .search-icon { font-size: 20px; }
   .search-readout { font-size: 9px; }
   .row-index { font-size: 9px; }
+  .technique-row {
+    grid-template-columns: 44px minmax(0, 1fr) 20px;
+    gap: 10px;
+  }
   .technique-row p { font-size: 11px; }
   .row-tags span { font-size: 9px; }
   .evidence-badge.is-compact {
-    font-size: 0;
+    display: inline-flex;
+    gap: 5px;
+    font-size: 9px;
+  }
+  .evidence-badge.is-compact > span { display: inline; }
+  .article-meta { font-size: 10px; }
+  .article-header-grid {
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 10px;
+  }
+  .article-mark {
+    width: 48px;
+    height: 48px;
+  }
+  .random-technique b { font-size: 9px; }
+}
+
+@media (max-width: 360px) {
+  .evidence-badge.is-compact {
     gap: 0;
+    font-size: 0;
   }
   .evidence-badge.is-compact > span { display: none; }
-  .article-meta { font-size: 10px; }
+  .random-technique b { font-size: 0; }
 }
 
 @media (max-width: 380px) {
   .manual-intro-copy > p:last-child { font-size: 10px; }
+  .technique-row { grid-template-columns: 40px minmax(0, 1fr) 17px; }
 }

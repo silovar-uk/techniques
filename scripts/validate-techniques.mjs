@@ -1,20 +1,8 @@
 import { readFileSync } from 'node:fs';
 
-const FILE = new URL('../data/techniques.json', import.meta.url);
+const TECHNIQUES_FILE = new URL('../data/techniques.json', import.meta.url);
+const CATEGORIES_FILE = new URL('../data/categories.json', import.meta.url);
 const ALLOWED_EVIDENCE = new Set(['VERIFIED', 'SUPPORTED', 'PERSONAL']);
-const ALLOWED_CATEGORIES = new Set([
-  'PC・スマホ',
-  '動画・音声',
-  'Web・開発',
-  '仕事・事務',
-  '暮らし',
-  'お金',
-  '移動・旅行',
-  '健康・身体',
-  '思考・学習',
-  '文章・表現',
-  'その他'
-]);
 
 const errors = [];
 const warnings = [];
@@ -46,14 +34,31 @@ function isHttpUrl(value) {
   }
 }
 
-let techniques;
-try {
-  techniques = JSON.parse(readFileSync(FILE, 'utf8'));
-} catch (error) {
-  console.error(`✗ data/techniques.json を読み込めません: ${error.message}`);
+function readJson(file, label) {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch (error) {
+    console.error(`✗ ${label} を読み込めません: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+const categories = readJson(CATEGORIES_FILE, 'data/categories.json');
+if (!Array.isArray(categories) || !categories.length) {
+  console.error('✗ data/categories.json は1件以上のカテゴリを持つ配列である必要があります。');
   process.exit(1);
 }
 
+const seenCategories = new Set();
+categories.forEach((category, index) => {
+  const scope = `categories[${index}]`;
+  if (!isNonEmptyString(category)) fail(scope, '空でない文字列が必要です');
+  if (seenCategories.has(category)) fail(scope, `カテゴリが重複しています: ${category}`);
+  seenCategories.add(category);
+});
+const allowedCategories = new Set(categories);
+
+const techniques = readJson(TECHNIQUES_FILE, 'data/techniques.json');
 if (!Array.isArray(techniques)) {
   console.error('✗ data/techniques.json のトップレベルは配列である必要があります。');
   process.exit(1);
@@ -90,8 +95,8 @@ techniques.forEach((item, index) => {
     seenNumbers.add(item.number);
   }
 
-  if (isNonEmptyString(item.category) && !ALLOWED_CATEGORIES.has(item.category)) {
-    fail(scope, `未登録カテゴリです: ${item.category}`);
+  if (isNonEmptyString(item.category) && !allowedCategories.has(item.category)) {
+    fail(scope, `data/categories.json にないカテゴリです: ${item.category}`);
   }
 
   if (isNonEmptyString(item.updated) && !isValidDate(item.updated)) {
@@ -117,7 +122,7 @@ techniques.forEach((item, index) => {
 
   if (Array.isArray(item.commands)) {
     item.commands.forEach((command, commandIndex) => {
-      if (!command || typeof command !== 'object') {
+      if (!command || typeof command !== 'object' || Array.isArray(command)) {
         fail(scope, `commands[${commandIndex}] はオブジェクトである必要があります`);
         return;
       }
@@ -129,7 +134,7 @@ techniques.forEach((item, index) => {
 
   if (Array.isArray(item.explanation)) {
     item.explanation.forEach((row, rowIndex) => {
-      if (!row || typeof row !== 'object') {
+      if (!row || typeof row !== 'object' || Array.isArray(row)) {
         fail(scope, `explanation[${rowIndex}] はオブジェクトである必要があります`);
         return;
       }
@@ -146,7 +151,7 @@ techniques.forEach((item, index) => {
 
   if (Array.isArray(item.sources)) {
     item.sources.forEach((source, sourceIndex) => {
-      if (!source || typeof source !== 'object') {
+      if (!source || typeof source !== 'object' || Array.isArray(source)) {
         fail(scope, `sources[${sourceIndex}] はオブジェクトである必要があります`);
         return;
       }
@@ -176,4 +181,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`✓ ${techniques.length} Techniques validated (${warnings.length} warning(s)).`);
+console.log(`✓ ${techniques.length} Techniques / ${categories.length} categories validated (${warnings.length} warning(s)).`);
