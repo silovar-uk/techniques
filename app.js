@@ -57,14 +57,6 @@ function formatDate(value) {
   return new Intl.DateTimeFormat('ja-JP', { month: 'short', day: 'numeric' }).format(date);
 }
 
-function formatSinceDate() {
-  const values = techniques.map(item => item.updated).filter(Boolean).sort();
-  if (!values.length) return '';
-  const date = new Date(`${values[0]}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(date);
-}
-
 function getTechniqueNumber(item) {
   return item.number || 'T-000';
 }
@@ -159,7 +151,6 @@ function renderFieldMark(item) {
 }
 
 function renderTechniqueRow(item) {
-  const tags = (item.tags || []).slice(0, 3);
   const isTransitionTarget = item.id === lastSelectedId;
   return `
     <a class="technique-row${isTransitionTarget ? ' is-transition-target' : ''}" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}">
@@ -171,7 +162,6 @@ function renderTechniqueRow(item) {
         </div>
         <h3>${escapeHtml(item.title)}</h3>
         <p>${escapeHtml(item.summary)}</p>
-        ${tags.length ? `<div class="row-tags">${tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
       </div>
       <div class="row-side">
         <time datetime="${escapeHtml(item.updated)}">${escapeHtml(formatDate(item.updated))}</time>
@@ -217,10 +207,8 @@ function updateLibrary() {
   if (!host) return;
   host.innerHTML = renderTechniqueResults(items);
   const isFiltered = Boolean(searchQuery.trim()) || activeCategory !== 'すべて';
-  const eyebrow = document.querySelector('#libraryEyebrow');
   const title = document.querySelector('#libraryTitle');
   const count = document.querySelector('#libraryCount');
-  if (eyebrow) eyebrow.textContent = isFiltered ? 'RESULTS / 検索結果' : 'RECENT / 最近追加';
   if (title) title.textContent = isFiltered ? '条件に合うTechnique' : '最近のTechnique';
   if (count) count.textContent = `${items.length} / ${techniques.length}`;
   updateSearchReadout(items);
@@ -255,7 +243,6 @@ function renderHome() {
   document.title = 'Techniques — Personal Field Instrument';
   const categories = ['すべて', ...getAvailableCategories()];
   const items = getFilteredItems();
-  const since = formatSinceDate();
   const isFiltered = Boolean(searchQuery.trim()) || activeCategory !== 'すべて';
   app.innerHTML = `
     <section class="manual-intro" aria-labelledby="manualTitle">
@@ -263,11 +250,6 @@ function renderHome() {
         <p class="eyebrow">PERSONAL FIELD INSTRUMENT / やり方の記憶装置</p>
         <h1 id="manualTitle">やり方を、すぐ思い出す。</h1>
         <p>「知っている」を「すぐできる」に戻すための、自分用の小さな手順集。</p>
-      </div>
-      <div class="growth-record" aria-label="Techniqueの蓄積記録">
-        <span><strong>${techniques.length}</strong> TECHNIQUES</span>
-        <span><strong>${categories.length - 1}</strong> CATEGORIES</span>
-        ${since ? `<span>SINCE <strong>${escapeHtml(since)}</strong></span>` : ''}
       </div>
       <div class="command-search" role="search">
         <span class="search-icon" aria-hidden="true">⌕</span>
@@ -290,7 +272,6 @@ function renderHome() {
     <section class="library" aria-labelledby="libraryTitle">
       <div class="section-head">
         <div>
-          <p id="libraryEyebrow" class="eyebrow">${isFiltered ? 'RESULTS / 検索結果' : 'RECENT / 最近追加'}</p>
           <h2 id="libraryTitle">${isFiltered ? '条件に合うTechnique' : '最近のTechnique'}</h2>
         </div>
         <span id="libraryCount" class="count">${items.length} / ${techniques.length}</span>
@@ -382,7 +363,7 @@ function renderArticle(item) {
           </div>
           <div class="article-mark">${renderFieldMark(item)}</div>
         </div>
-        <p class="article-meta">更新 ${escapeHtml(formatDate(item.updated))}　·　${(item.tags || []).slice(0, 5).map(escapeHtml).join(' / ')}</p>
+        <p class="article-meta">更新 ${escapeHtml(formatDate(item.updated))}</p>
         <p class="article-summary">${escapeHtml(item.summary)}</p>
       </header>
       <section class="answer-box">${renderSectionLabel('QUICK ANSWER', 'まずこれ')}<div>${escapeHtml(item.quickAnswer)}</div></section>

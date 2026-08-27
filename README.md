@@ -31,6 +31,9 @@ UIの基本ルール：
 - キーボードfocusと `prefers-reduced-motion` を維持する
 - 弱くしても意味は消さない。特にEvidenceはmobileでも原則ラベルを残す
 - 戻る操作では、scroll位置だけでなくkeyboard focusの文脈も復元する
+- 再訪時の検索・一覧到達を優先し、Introや自己紹介的な情報を大きくしすぎない
+- tagsは検索用metadataを主用途とし、一覧・詳細で常時見せる情報は必要最小限にする
+- UI変更は Retrieval Speed / Scan Efficiency / Action Readiness の改善理由を説明できるものだけ採用する
 
 CSSは **`styles.css` を唯一の正本** とします。確定済みのQuiet UIルールを別ファイルで上書きせず、componentの元selectorとmedia queryへ直接記述します。新しいCSSファイルを「調整用レイヤー」として常設しません。
 
