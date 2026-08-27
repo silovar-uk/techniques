@@ -37,6 +37,10 @@ UIの基本ルール：
 - 検索は複数語を空白で組み合わせられ、title / tags / category / summary / Quick Answerの近さで軽く並べ替える
 - keyboardでは `/` → 入力 → `↓` → `↑↓` → `Enter` で検索からTechniqueを開ける。検索結果が1件だけなら入力欄の `Enter` から直接開ける
 - 検索改善は新しいUI・dependency・network requestを増やさず、既存JSONだけで成立させる
+- Quiet Delightは色やanimationを増やすのではなく、既存のT-number / Field Mark / connectionを使って小さな発見を作る
+- Field Markはid由来のsignature、category由来のtick、Evidence表現を組み合わせたTechnique fingerprintとして扱う
+- 記事末尾のONE MOREは候補を1件だけ表示し、shared tags / same category / deterministic odd connectionから軽く導出する
+- WANDERは「用事がないときの回遊入口」として扱い、検索導線より強く主張させない
 
 CSSは **`styles.css` を唯一の正本** とします。確定済みのQuiet UIルールを別ファイルで上書きせず、componentの元selectorとmedia queryへ直接記述します。新しいCSSファイルを「調整用レイヤー」として常設しません。
 
@@ -107,7 +111,7 @@ node scripts/validate-techniques.mjs
 ## Interactionの原則
 
 - 検索結果の並び替えでposition animationを使わない
-- Randomは現在の検索・カテゴリ文脈を優先する
+- WANDERは現在の検索・カテゴリ文脈を優先する
 - `/` で検索へ移動、`Escape` でLibraryへ戻る操作を維持する
 - keyboardでTechniqueを開いた場合、Detailの見出しへfocusを移す
 - keyboardでLibraryへ戻った場合、直前のTechnique rowへfocusを戻す
