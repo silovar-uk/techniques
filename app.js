@@ -85,13 +85,39 @@ function searchableText(item) {
   return value;
 }
 
+function getSearchScore(item, query) {
+  const tokens = query.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return 0;
+  const fullText = searchableText(item);
+  if (!tokens.every(token => fullText.includes(token))) return -1;
+
+  const title = normalize(item.title);
+  const tags = normalize((item.tags || []).join(' '));
+  const category = normalize(item.category);
+  const summary = normalize(item.summary);
+  const quickAnswer = normalize(item.quickAnswer);
+  let score = title.includes(query) ? 80 : 0;
+
+  tokens.forEach(token => {
+    if (title.includes(token)) score += 32;
+    if (tags.includes(token)) score += 20;
+    if (category.includes(token)) score += 14;
+    if (summary.includes(token)) score += 10;
+    if (quickAnswer.includes(token)) score += 8;
+  });
+  return score;
+}
+
 function getFilteredItems() {
   const query = normalize(searchQuery.trim());
-  return techniques.filter(item => {
-    const categoryMatch = activeCategory === 'すべて' || item.category === activeCategory;
-    const queryMatch = !query || searchableText(item).includes(query);
-    return categoryMatch && queryMatch;
-  });
+  return techniques
+    .map((item, index) => ({ item, index, score: query ? getSearchScore(item, query) : 0 }))
+    .filter(({ item, score }) => {
+      const categoryMatch = activeCategory === 'すべて' || item.category === activeCategory;
+      return categoryMatch && score >= 0;
+    })
+    .sort((a, b) => query ? b.score - a.score || a.index - b.index : a.index - b.index)
+    .map(({ item }) => item);
 }
 
 function getAvailableCategories() {
@@ -219,8 +245,20 @@ function updateLibrary() {
   });
 }
 
+function getResultRows() {
+  return [...document.querySelectorAll('#libraryResults .technique-row')];
+}
+
+function focusResultRow(row) {
+  if (!row) return;
+  row.focus({ preventScroll: true });
+  row.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+}
+
 function bindHomeEvents() {
   const input = document.querySelector('#search');
+  const results = document.querySelector('#libraryResults');
+
   input?.addEventListener('input', event => {
     searchQuery = event.target.value;
     updateLibrary();
@@ -230,6 +268,37 @@ function bindHomeEvents() {
     if (readout && !searchQuery.trim()) readout.textContent = `SEARCH ${getFilteredItems().length} RECORDS`;
   });
   input?.addEventListener('blur', () => updateSearchReadout(getFilteredItems(), false));
+  input?.addEventListener('keydown', event => {
+    if (event.isComposing) return;
+    const rows = getResultRows();
+    if (event.key === 'ArrowDown' && rows.length) {
+      event.preventDefault();
+      focusResultRow(rows[0]);
+    }
+    if (event.key === 'Enter' && rows.length === 1) {
+      event.preventDefault();
+      rows[0].click();
+    }
+  });
+
+  results?.addEventListener('keydown', event => {
+    if (event.isComposing || !['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    const row = event.target.closest('.technique-row');
+    if (!row) return;
+    const rows = getResultRows();
+    const index = rows.indexOf(row);
+    if (index < 0) return;
+    event.preventDefault();
+    if (event.key === 'ArrowUp' && index === 0) {
+      input?.focus({ preventScroll: true });
+      return;
+    }
+    const nextIndex = event.key === 'ArrowDown'
+      ? Math.min(index + 1, rows.length - 1)
+      : Math.max(index - 1, 0);
+    focusResultRow(rows[nextIndex]);
+  });
+
   document.querySelectorAll('[data-category]').forEach(button => {
     button.addEventListener('click', event => {
       activeCategory = button.dataset.category;
@@ -255,7 +324,8 @@ function renderHome() {
         <span class="search-icon" aria-hidden="true">⌕</span>
         <input id="search" class="search-box" type="search" autocomplete="off"
           placeholder="何をしたい？  MOV / Claude / 不安 / 発声…"
-          value="${escapeHtml(searchQuery)}" aria-label="やり方を検索">
+          value="${escapeHtml(searchQuery)}" aria-label="やり方を検索"
+          aria-controls="libraryResults" aria-keyshortcuts="ArrowDown">
         <span id="searchReadout" class="search-readout" aria-hidden="true">${escapeHtml(getSearchReadout(items))}</span>
         <kbd>/</kbd>
       </div>

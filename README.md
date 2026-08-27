@@ -34,6 +34,9 @@ UIの基本ルール：
 - 再訪時の検索・一覧到達を優先し、Introや自己紹介的な情報を大きくしすぎない
 - tagsは検索用metadataを主用途とし、一覧・詳細で常時見せる情報は必要最小限にする
 - UI変更は Retrieval Speed / Scan Efficiency / Action Readiness の改善理由を説明できるものだけ採用する
+- 検索は複数語を空白で組み合わせられ、title / tags / category / summary / Quick Answerの近さで軽く並べ替える
+- keyboardでは `/` → 入力 → `↓` → `↑↓` → `Enter` で検索からTechniqueを開ける。検索結果が1件だけなら入力欄の `Enter` から直接開ける
+- 検索改善は新しいUI・dependency・network requestを増やさず、既存JSONだけで成立させる
 
 CSSは **`styles.css` を唯一の正本** とします。確定済みのQuiet UIルールを別ファイルで上書きせず、componentの元selectorとmedia queryへ直接記述します。新しいCSSファイルを「調整用レイヤー」として常設しません。
 
