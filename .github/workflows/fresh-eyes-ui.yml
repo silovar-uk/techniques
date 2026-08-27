@@ -1,0 +1,168 @@
+name: Apply Fresh Eyes UI polish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fresh-eyes-ui.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply focused UI changes
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import re
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 match, found {count}')
+              return text.replace(old, new, 1)
+
+          app_path = Path('app.js')
+          app = app_path.read_text()
+
+          app = replace_once(app, '''function formatSinceDate() {
+            const values = techniques.map(item => item.updated).filter(Boolean).sort();
+            if (!values.length) return '';
+            const date = new Date(`${values[0]}T00:00:00`);
+            if (Number.isNaN(date.getTime())) return '';
+            return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(date);
+          }
+
+          ''', '', 'remove formatSinceDate')
+
+          app = replace_once(app, "  const tags = (item.tags || []).slice(0, 3);\n", '', 'remove visible row tags variable')
+          app = replace_once(app, "        ${tags.length ? `<div class=\"row-tags\">${tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}\n", '', 'remove visible row tags')
+
+          app = replace_once(app, "  const eyebrow = document.querySelector('#libraryEyebrow');\n", '', 'remove library eyebrow query')
+          app = replace_once(app, "  if (eyebrow) eyebrow.textContent = isFiltered ? 'RESULTS / 検索結果' : 'RECENT / 最近追加';\n", '', 'remove library eyebrow update')
+
+          app = replace_once(app, "  const since = formatSinceDate();\n", '', 'remove since calculation')
+          app = replace_once(app, '''      <div class="growth-record" aria-label="Techniqueの蓄積記録">
+                <span><strong>${techniques.length}</strong> TECHNIQUES</span>
+                <span><strong>${categories.length - 1}</strong> CATEGORIES</span>
+                ${since ? `<span>SINCE <strong>${escapeHtml(since)}</strong></span>` : ''}
+              </div>
+          ''', '', 'remove growth record')
+          app = replace_once(app, "          <p id=\"libraryEyebrow\" class=\"eyebrow\">${isFiltered ? 'RESULTS / 検索結果' : 'RECENT / 最近追加'}</p>\n", '', 'remove library eyebrow markup')
+          app = replace_once(app, "        <p class=\"article-meta\">更新 ${escapeHtml(formatDate(item.updated))}　·　${(item.tags || []).slice(0, 5).map(escapeHtml).join(' / ')}</p>\n", "        <p class=\"article-meta\">更新 ${escapeHtml(formatDate(item.updated))}</p>\n", 'make tags search-only on article')
+          app_path.write_text(app)
+
+          css_path = Path('styles.css')
+          css = css_path.read_text()
+
+          css = replace_once(css, '.manual-intro { padding: 32px 0 0; }', '.manual-intro { padding: 24px 0 0; }', 'compress intro top')
+          css = replace_once(css, '''.manual-intro-copy {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(300px, 520px);
+            align-items: end;
+            gap: 24px;
+            margin-bottom: 18px;
+          }''', '''.manual-intro-copy {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 480px);
+            align-items: end;
+            gap: 18px;
+            margin-bottom: 12px;
+          }''', 'compress intro grid')
+          css = replace_once(css, '  font-size: clamp(28px, 3.2vw, 42px);', '  font-size: clamp(27px, 3vw, 36px);', 'compress home title')
+
+          growth_pattern = re.compile(r'\n\.growth-record \{.*?\n\.growth-record strong \{[^\n]*\}\n', re.S)
+          css, count = growth_pattern.subn('\n', css, count=1)
+          if count != 1:
+              raise SystemExit(f'remove growth CSS: expected 1 match, found {count}')
+
+          css = replace_once(css, '.library-tools {\n  margin-top: 16px;', '.library-tools {\n  margin-top: 12px;', 'bring browse closer to search')
+          css = replace_once(css, '.library { padding: 30px 0 64px; }', '.library { padding: 22px 0 64px; }', 'bring list closer')
+          css = replace_once(css, '''.section-head {
+            min-height: 45px;
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 10px;
+          }
+          .section-head .eyebrow { margin-bottom: 3px; }
+          .section-head h2 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -.015em;
+          }''', '''.section-head {
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 8px;
+          }
+          .section-head h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -.015em;
+          }''', 'simplify list heading')
+          css = replace_once(css, '  padding: 18px 4px 19px;', '  padding: 15px 4px 16px;', 'tighten desktop rows')
+
+          row_tags_pattern = re.compile(r'\n\.row-tags \{.*?\n\.row-tags span \+ span::before \{.*?\n\}\n', re.S)
+          css, count = row_tags_pattern.subn('\n', css, count=1)
+          if count != 1:
+              raise SystemExit(f'remove row tag CSS: expected 1 match, found {count}')
+
+          css = replace_once(css, '  padding-bottom: 26px;', '  padding-bottom: 20px;', 'shorten article header')
+          css = replace_once(css, '  margin: 15px 0 0;', '  margin: 12px 0 0;', 'shorten summary gap')
+          css = replace_once(css, '  margin: 22px 0 34px;', '  margin: 16px 0 30px;', 'bring quick answer forward')
+
+          css = replace_once(css, '  .manual-intro { padding-top: 22px; }', '  .manual-intro { padding-top: 18px; }', 'compress mobile intro top')
+          css = replace_once(css, '    margin-bottom: 13px;', '    margin-bottom: 10px;', 'compress mobile intro gap')
+          css = replace_once(css, '  .manual-intro h1 { font-size: 30px; }', '  .manual-intro h1 { font-size: 28px; }', 'compress mobile title')
+          css = replace_once(css, '    margin-top: 7px;', '    margin-top: 5px;', 'compress mobile intro description')
+          css = css.replace("  .growth-record {\n    gap: 5px 9px;\n    margin-bottom: 9px;\n    font-size: 9px;\n  }\n  .growth-record span + span::before { width: 7px; margin-right: 4px; }\n", '')
+          css = replace_once(css, '  .library { padding-top: 20px; }', '  .library { padding-top: 16px; }', 'tighten mobile library')
+          css = replace_once(css, '  .section-head { min-height: 38px; margin-bottom: 6px; }', '  .section-head { min-height: 30px; margin-bottom: 6px; }', 'simplify mobile list heading')
+          css = replace_once(css, '  .technique-row {\n    grid-template-columns: 44px minmax(0, 1fr) 20px;\n    gap: 10px;\n    padding: 15px 0 16px;\n  }', '  .technique-row {\n    grid-template-columns: 44px minmax(0, 1fr) 20px;\n    gap: 10px;\n    padding: 13px 0 14px;\n  }', 'tighten mobile rows')
+          mobile_tags_pattern = re.compile(r'\n  \.row-tags \{.*?\n  \.row-tags span \{.*?\n  \}\n', re.S)
+          css, count = mobile_tags_pattern.subn('\n', css, count=1)
+          if count != 1:
+              raise SystemExit(f'remove mobile tag CSS: expected 1 match, found {count}')
+          css = replace_once(css, '  .article-header { padding-bottom: 21px; }', '  .article-header { padding-bottom: 18px; }', 'shorten mobile article header')
+          css = replace_once(css, '  .answer-box { margin-top: 18px; padding: 16px; }', '  .answer-box { margin-top: 14px; padding: 16px; }', 'bring mobile quick answer forward')
+          css = replace_once(css, '  .manual-intro h1 { font-size: 27px; }', '  .manual-intro h1 { font-size: 26px; }', 'narrow mobile title')
+          css = css.replace('  .row-tags span:nth-child(n+3) { display: none; }\n', '')
+          css_path.write_text(css)
+
+          index_path = Path('index.html')
+          index = index_path.read_text()
+          index = index.replace('styles.css?v=20260826-core1', 'styles.css?v=20260828-instrument1')
+          index = index.replace('app.js?v=20260826-consistency1', 'app.js?v=20260828-instrument1')
+          index_path.write_text(index)
+
+          readme_path = Path('README.md')
+          readme = readme_path.read_text()
+          anchor = '- 戻る操作では、scroll位置だけでなくkeyboard focusの文脈も復元する\n'
+          addition = '''- 再訪時の検索・一覧到達を優先し、Introや自己紹介的な情報を大きくしすぎない
+          - tagsは検索用metadataを主用途とし、一覧・詳細で常時見せる情報は必要最小限にする
+          - UI変更は Retrieval Speed / Scan Efficiency / Action Readiness の改善理由を説明できるものだけ採用する
+          '''
+          if addition.strip() not in readme:
+              readme = replace_once(readme, anchor, anchor + addition, 'document Instrument First principles')
+          readme_path.write_text(readme)
+          PY
+      - name: Validate technique data
+        run: node scripts/validate-techniques.mjs
+      - name: Remove temporary workflow and commit
+        run: |
+          rm .github/workflows/fresh-eyes-ui.yml
+          git config user.name "silovar-uk"
+          git config user.email "46244124+silovar-uk@users.noreply.github.com"
+          git add app.js styles.css index.html README.md .github/workflows/fresh-eyes-ui.yml
+          git commit -m "Polish UI around retrieval and scanning"
+          git push
