@@ -160,14 +160,12 @@ jobs:
           '''
           app = replace_once(app, old_bind, new_bind, 'add keyboard result navigation')
 
-          old_input = '''        <input id="search" class="search-box" type="search" autocomplete="off"
-                  placeholder="何をしたい？  MOV / Claude / 不安 / 発声…"
-                  value="${escapeHtml(searchQuery)}" aria-label="やり方を検索">'''
-          new_input = '''        <input id="search" class="search-box" type="search" autocomplete="off"
-                  placeholder="何をしたい？  MOV / Claude / 不安 / 発声…"
-                  value="${escapeHtml(searchQuery)}" aria-label="やり方を検索"
-                  aria-controls="libraryResults" aria-keyshortcuts="ArrowDown">'''
-          app = replace_once(app, old_input, new_input, 'describe search keyboard relationship')
+          app = replace_once(
+              app,
+              'value="${escapeHtml(searchQuery)}" aria-label="やり方を検索">',
+              'value="${escapeHtml(searchQuery)}" aria-label="やり方を検索"\n          aria-controls="libraryResults" aria-keyshortcuts="ArrowDown">',
+              'describe search keyboard relationship'
+          )
           app_path.write_text(app)
 
           index_path = Path('index.html')
