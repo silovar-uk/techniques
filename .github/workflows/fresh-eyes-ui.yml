@@ -18,6 +18,7 @@ jobs:
         run: |
           python <<'PY'
           from pathlib import Path
+          import re
 
           def replace_once(text, old, new, label):
               count = text.count(old)
@@ -25,127 +26,81 @@ jobs:
                   raise SystemExit(f'{label}: expected 1 match, found {count}')
               return text.replace(old, new, 1)
 
+          def sub_once(text, pattern, repl, label, flags=0):
+              text, count = re.subn(pattern, repl, text, count=1, flags=flags)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 match, found {count}')
+              return text
+
+          def replace_css_block(text, selector, new_block='', occurrence=1):
+              starts = [m.start() for m in re.finditer(re.escape(selector) + r'\s*\{', text)]
+              if len(starts) < occurrence:
+                  raise SystemExit(f'CSS block {selector} occurrence {occurrence} not found')
+              start = starts[occurrence - 1]
+              brace = text.find('{', start)
+              depth = 0
+              end = None
+              for i in range(brace, len(text)):
+                  if text[i] == '{':
+                      depth += 1
+                  elif text[i] == '}':
+                      depth -= 1
+                      if depth == 0:
+                          end = i + 1
+                          break
+              if end is None:
+                  raise SystemExit(f'CSS block {selector} is unbalanced')
+              while end < len(text) and text[end] in '\r\n':
+                  end += 1
+              replacement = new_block.rstrip() + ('\n' if new_block else '')
+              return text[:start] + replacement + text[end:]
+
           app_path = Path('app.js')
           app = app_path.read_text()
-
-          app = replace_once(app, '''function formatSinceDate() {
-            const values = techniques.map(item => item.updated).filter(Boolean).sort();
-            if (!values.length) return '';
-            const date = new Date(`${values[0]}T00:00:00`);
-            if (Number.isNaN(date.getTime())) return '';
-            return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(date);
-          }
-
-          ''', '', 'remove formatSinceDate')
+          app = sub_once(app, r"function formatSinceDate\(\) \{.*?\n\}\n\n", '', 'remove formatSinceDate', re.S)
           app = replace_once(app, "  const tags = (item.tags || []).slice(0, 3);\n", '', 'remove visible row tags variable')
-          app = replace_once(app, "        ${tags.length ? `<div class=\"row-tags\">${tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}\n", '', 'remove visible row tags')
+          app = sub_once(app, r'^\s*\$\{tags\.length \? `<div class="row-tags">.*?\n', '', 'remove visible row tags', re.M)
           app = replace_once(app, "  const eyebrow = document.querySelector('#libraryEyebrow');\n", '', 'remove library eyebrow query')
           app = replace_once(app, "  if (eyebrow) eyebrow.textContent = isFiltered ? 'RESULTS / 検索結果' : 'RECENT / 最近追加';\n", '', 'remove library eyebrow update')
           app = replace_once(app, "  const since = formatSinceDate();\n", '', 'remove since calculation')
-          app = replace_once(app, '''      <div class="growth-record" aria-label="Techniqueの蓄積記録">
-                <span><strong>${techniques.length}</strong> TECHNIQUES</span>
-                <span><strong>${categories.length - 1}</strong> CATEGORIES</span>
-                ${since ? `<span>SINCE <strong>${escapeHtml(since)}</strong></span>` : ''}
-              </div>
-          ''', '', 'remove growth record')
-          app = replace_once(app, "          <p id=\"libraryEyebrow\" class=\"eyebrow\">${isFiltered ? 'RESULTS / 検索結果' : 'RECENT / 最近追加'}</p>\n", '', 'remove library eyebrow markup')
-          app = replace_once(app, "        <p class=\"article-meta\">更新 ${escapeHtml(formatDate(item.updated))}　·　${(item.tags || []).slice(0, 5).map(escapeHtml).join(' / ')}</p>\n", "        <p class=\"article-meta\">更新 ${escapeHtml(formatDate(item.updated))}</p>\n", 'make tags search-only on article')
+          app = sub_once(app, r'\n\s*<div class="growth-record" aria-label="Techniqueの蓄積記録">.*?</div>\n', '\n', 'remove growth record', re.S)
+          app = sub_once(app, r'^\s*<p id="libraryEyebrow" class="eyebrow">.*?</p>\n', '', 'remove library eyebrow markup', re.M)
+          app = sub_once(app, r'<p class="article-meta">更新 \$\{escapeHtml\(formatDate\(item\.updated\)\)\}.*?</p>', '<p class="article-meta">更新 ${escapeHtml(formatDate(item.updated))}</p>', 'make tags search-only on article')
           app_path.write_text(app)
 
           css_path = Path('styles.css')
           css = css_path.read_text()
           css = replace_once(css, '.manual-intro { padding: 32px 0 0; }', '.manual-intro { padding: 24px 0 0; }', 'compress intro top')
-          css = replace_once(css, '''.manual-intro-copy {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(300px, 520px);
-            align-items: end;
-            gap: 24px;
-            margin-bottom: 18px;
-          }''', '''.manual-intro-copy {
+          css = replace_css_block(css, '.manual-intro-copy', '''.manual-intro-copy {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(280px, 480px);
             align-items: end;
             gap: 18px;
             margin-bottom: 12px;
-          }''', 'compress intro grid')
+          }''')
           css = replace_once(css, '  font-size: clamp(28px, 3.2vw, 42px);', '  font-size: clamp(27px, 3vw, 36px);', 'compress home title')
-          css = replace_once(css, '''
-          .growth-record {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px 18px;
-            margin: 0 0 12px;
-            color: var(--faint);
-            font: 600 9px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-            letter-spacing: .07em;
-            text-transform: uppercase;
-          }
-          .growth-record span {
-            display: inline-flex;
-            align-items: baseline;
-            gap: 4px;
-          }
-          .growth-record span + span::before {
-            content: '';
-            width: 12px;
-            border-top: 1px solid var(--line-strong);
-            margin-right: 10px;
-            transform: translateY(-2px);
-          }
-          .growth-record strong { color: var(--ink); font-weight: 780; }
-          ''', '\n', 'remove growth CSS')
+          for selector in ['.growth-record', '.growth-record span', '.growth-record span + span::before', '.growth-record strong']:
+              css = replace_css_block(css, selector)
           css = replace_once(css, '.library-tools {\n  margin-top: 16px;', '.library-tools {\n  margin-top: 12px;', 'bring browse closer to search')
           css = replace_once(css, '.library { padding: 30px 0 64px; }', '.library { padding: 22px 0 64px; }', 'bring list closer')
-          css = replace_once(css, '''.section-head {
-            min-height: 45px;
-            display: flex;
-            align-items: end;
-            justify-content: space-between;
-            gap: 18px;
-            margin-bottom: 10px;
-          }
-          .section-head .eyebrow { margin-bottom: 3px; }
-          .section-head h2 {
-            margin: 0;
-            font-size: 17px;
-            font-weight: 700;
-            letter-spacing: -.015em;
-          }''', '''.section-head {
+          css = replace_css_block(css, '.section-head', '''.section-head {
             min-height: 30px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 18px;
             margin-bottom: 8px;
-          }
-          .section-head h2 {
+          }''')
+          css = replace_css_block(css, '.section-head .eyebrow')
+          css = replace_css_block(css, '.section-head h2', '''.section-head h2 {
             margin: 0;
             font-size: 16px;
             font-weight: 700;
             letter-spacing: -.015em;
-          }''', 'simplify list heading')
+          }''')
           css = replace_once(css, '  padding: 18px 4px 19px;', '  padding: 15px 4px 16px;', 'tighten desktop rows')
-          css = replace_once(css, '''
-          .row-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0;
-            margin-top: 6px;
-          }
-          .row-tags span {
-            border-radius: 0;
-            background: transparent;
-            color: var(--faint);
-            padding: 0;
-            font-size: 9px;
-          }
-          .row-tags span + span::before {
-            content: "·";
-            margin: 0 6px;
-            color: var(--line-strong);
-          }
-          ''', '\n', 'remove row tag CSS')
+          for selector in ['.row-tags', '.row-tags span', '.row-tags span + span::before']:
+              css = replace_css_block(css, selector)
           css = replace_once(css, '  padding-bottom: 26px;', '  padding-bottom: 20px;', 'shorten article header')
           css = replace_once(css, '  margin: 15px 0 0;', '  margin: 12px 0 0;', 'shorten summary gap')
           css = replace_once(css, '  margin: 22px 0 34px;', '  margin: 16px 0 30px;', 'bring quick answer forward')
@@ -153,37 +108,18 @@ jobs:
           css = replace_once(css, '    margin-bottom: 13px;', '    margin-bottom: 10px;', 'compress mobile intro gap')
           css = replace_once(css, '  .manual-intro h1 { font-size: 30px; }', '  .manual-intro h1 { font-size: 28px; }', 'compress mobile title')
           css = replace_once(css, '    margin-top: 7px;', '    margin-top: 5px;', 'compress mobile intro description')
-          css = replace_once(css, '''  .growth-record {
-            gap: 5px 9px;
-            margin-bottom: 9px;
-            font-size: 9px;
-          }
-          .growth-record span + span::before { width: 7px; margin-right: 4px; }
-          ''', '', 'remove mobile growth CSS')
+          # top-level growth and tag rules are gone, so any remaining ones are mobile-only
+          for selector in ['.growth-record', '.growth-record span + span::before', '.row-tags', '.row-tags span']:
+              if re.search(re.escape(selector) + r'\s*\{', css):
+                  css = replace_css_block(css, selector)
           css = replace_once(css, '  .library { padding-top: 20px; }', '  .library { padding-top: 16px; }', 'tighten mobile library')
           css = replace_once(css, '  .section-head { min-height: 38px; margin-bottom: 6px; }', '  .section-head { min-height: 30px; margin-bottom: 6px; }', 'simplify mobile list heading')
-          css = replace_once(css, '''  .technique-row {
-            grid-template-columns: 44px minmax(0, 1fr) 20px;
-            gap: 10px;
-            padding: 15px 0 16px;
-          }''', '''  .technique-row {
-            grid-template-columns: 44px minmax(0, 1fr) 20px;
-            gap: 10px;
-            padding: 13px 0 14px;
-          }''', 'tighten mobile rows')
-          css = replace_once(css, '''  .row-tags {
-            flex-wrap: nowrap;
-            overflow: hidden;
-          }
-          .row-tags span {
-            flex: 0 0 auto;
-            font-size: 9px;
-          }
-          ''', '', 'remove mobile tag CSS')
+          css = replace_once(css, '    padding: 15px 0 16px;', '    padding: 13px 0 14px;', 'tighten mobile rows')
           css = replace_once(css, '  .article-header { padding-bottom: 21px; }', '  .article-header { padding-bottom: 18px; }', 'shorten mobile article header')
           css = replace_once(css, '  .answer-box { margin-top: 18px; padding: 16px; }', '  .answer-box { margin-top: 14px; padding: 16px; }', 'bring mobile quick answer forward')
           css = replace_once(css, '  .manual-intro h1 { font-size: 27px; }', '  .manual-intro h1 { font-size: 26px; }', 'narrow mobile title')
-          css = replace_once(css, '  .row-tags span:nth-child(n+3) { display: none; }\n', '', 'remove narrow tag rule')
+          if '.row-tags span:nth-child(n+3)' in css:
+              css = replace_css_block(css, '.row-tags span:nth-child(n+3)')
           css_path.write_text(css)
 
           index_path = Path('index.html')
@@ -195,10 +131,7 @@ jobs:
           readme_path = Path('README.md')
           readme = readme_path.read_text()
           anchor = '- 戻る操作では、scroll位置だけでなくkeyboard focusの文脈も復元する\n'
-          addition = '''- 再訪時の検索・一覧到達を優先し、Introや自己紹介的な情報を大きくしすぎない
-          - tagsは検索用metadataを主用途とし、一覧・詳細で常時見せる情報は必要最小限にする
-          - UI変更は Retrieval Speed / Scan Efficiency / Action Readiness の改善理由を説明できるものだけ採用する
-          '''
+          addition = '- 再訪時の検索・一覧到達を優先し、Introや自己紹介的な情報を大きくしすぎない\n- tagsは検索用metadataを主用途とし、一覧・詳細で常時見せる情報は必要最小限にする\n- UI変更は Retrieval Speed / Scan Efficiency / Action Readiness の改善理由を説明できるものだけ採用する\n'
           readme = replace_once(readme, anchor, anchor + addition, 'document Instrument First principles')
           readme_path.write_text(readme)
           PY
