@@ -18,7 +18,6 @@ jobs:
         run: |
           python <<'PY'
           from pathlib import Path
-          import re
 
           def replace_once(text, old, new, label):
               count = text.count(old)
@@ -38,13 +37,10 @@ jobs:
           }
 
           ''', '', 'remove formatSinceDate')
-
           app = replace_once(app, "  const tags = (item.tags || []).slice(0, 3);\n", '', 'remove visible row tags variable')
           app = replace_once(app, "        ${tags.length ? `<div class=\"row-tags\">${tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}\n", '', 'remove visible row tags')
-
           app = replace_once(app, "  const eyebrow = document.querySelector('#libraryEyebrow');\n", '', 'remove library eyebrow query')
           app = replace_once(app, "  if (eyebrow) eyebrow.textContent = isFiltered ? 'RESULTS / 検索結果' : 'RECENT / 最近追加';\n", '', 'remove library eyebrow update')
-
           app = replace_once(app, "  const since = formatSinceDate();\n", '', 'remove since calculation')
           app = replace_once(app, '''      <div class="growth-record" aria-label="Techniqueの蓄積記録">
                 <span><strong>${techniques.length}</strong> TECHNIQUES</span>
@@ -58,7 +54,6 @@ jobs:
 
           css_path = Path('styles.css')
           css = css_path.read_text()
-
           css = replace_once(css, '.manual-intro { padding: 32px 0 0; }', '.manual-intro { padding: 24px 0 0; }', 'compress intro top')
           css = replace_once(css, '''.manual-intro-copy {
             display: grid;
@@ -74,12 +69,32 @@ jobs:
             margin-bottom: 12px;
           }''', 'compress intro grid')
           css = replace_once(css, '  font-size: clamp(28px, 3.2vw, 42px);', '  font-size: clamp(27px, 3vw, 36px);', 'compress home title')
-
-          growth_pattern = re.compile(r'\n\.growth-record \{.*?\n\.growth-record strong \{[^\n]*\}\n', re.S)
-          css, count = growth_pattern.subn('\n', css, count=1)
-          if count != 1:
-              raise SystemExit(f'remove growth CSS: expected 1 match, found {count}')
-
+          css = replace_once(css, '''
+          .growth-record {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px 18px;
+            margin: 0 0 12px;
+            color: var(--faint);
+            font: 600 9px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+          }
+          .growth-record span {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
+          }
+          .growth-record span + span::before {
+            content: '';
+            width: 12px;
+            border-top: 1px solid var(--line-strong);
+            margin-right: 10px;
+            transform: translateY(-2px);
+          }
+          .growth-record strong { color: var(--ink); font-weight: 780; }
+          ''', '\n', 'remove growth CSS')
           css = replace_once(css, '.library-tools {\n  margin-top: 16px;', '.library-tools {\n  margin-top: 12px;', 'bring browse closer to search')
           css = replace_once(css, '.library { padding: 30px 0 64px; }', '.library { padding: 22px 0 64px; }', 'bring list closer')
           css = replace_once(css, '''.section-head {
@@ -111,38 +126,70 @@ jobs:
             letter-spacing: -.015em;
           }''', 'simplify list heading')
           css = replace_once(css, '  padding: 18px 4px 19px;', '  padding: 15px 4px 16px;', 'tighten desktop rows')
-
-          row_tags_pattern = re.compile(r'\n\.row-tags \{.*?\n\.row-tags span \+ span::before \{.*?\n\}\n', re.S)
-          css, count = row_tags_pattern.subn('\n', css, count=1)
-          if count != 1:
-              raise SystemExit(f'remove row tag CSS: expected 1 match, found {count}')
-
+          css = replace_once(css, '''
+          .row-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+            margin-top: 6px;
+          }
+          .row-tags span {
+            border-radius: 0;
+            background: transparent;
+            color: var(--faint);
+            padding: 0;
+            font-size: 9px;
+          }
+          .row-tags span + span::before {
+            content: "·";
+            margin: 0 6px;
+            color: var(--line-strong);
+          }
+          ''', '\n', 'remove row tag CSS')
           css = replace_once(css, '  padding-bottom: 26px;', '  padding-bottom: 20px;', 'shorten article header')
           css = replace_once(css, '  margin: 15px 0 0;', '  margin: 12px 0 0;', 'shorten summary gap')
           css = replace_once(css, '  margin: 22px 0 34px;', '  margin: 16px 0 30px;', 'bring quick answer forward')
-
           css = replace_once(css, '  .manual-intro { padding-top: 22px; }', '  .manual-intro { padding-top: 18px; }', 'compress mobile intro top')
           css = replace_once(css, '    margin-bottom: 13px;', '    margin-bottom: 10px;', 'compress mobile intro gap')
           css = replace_once(css, '  .manual-intro h1 { font-size: 30px; }', '  .manual-intro h1 { font-size: 28px; }', 'compress mobile title')
           css = replace_once(css, '    margin-top: 7px;', '    margin-top: 5px;', 'compress mobile intro description')
-          css = css.replace("  .growth-record {\n    gap: 5px 9px;\n    margin-bottom: 9px;\n    font-size: 9px;\n  }\n  .growth-record span + span::before { width: 7px; margin-right: 4px; }\n", '')
+          css = replace_once(css, '''  .growth-record {
+            gap: 5px 9px;
+            margin-bottom: 9px;
+            font-size: 9px;
+          }
+          .growth-record span + span::before { width: 7px; margin-right: 4px; }
+          ''', '', 'remove mobile growth CSS')
           css = replace_once(css, '  .library { padding-top: 20px; }', '  .library { padding-top: 16px; }', 'tighten mobile library')
           css = replace_once(css, '  .section-head { min-height: 38px; margin-bottom: 6px; }', '  .section-head { min-height: 30px; margin-bottom: 6px; }', 'simplify mobile list heading')
-          css = replace_once(css, '  .technique-row {\n    grid-template-columns: 44px minmax(0, 1fr) 20px;\n    gap: 10px;\n    padding: 15px 0 16px;\n  }', '  .technique-row {\n    grid-template-columns: 44px minmax(0, 1fr) 20px;\n    gap: 10px;\n    padding: 13px 0 14px;\n  }', 'tighten mobile rows')
-          mobile_tags_pattern = re.compile(r'\n  \.row-tags \{.*?\n  \.row-tags span \{.*?\n  \}\n', re.S)
-          css, count = mobile_tags_pattern.subn('\n', css, count=1)
-          if count != 1:
-              raise SystemExit(f'remove mobile tag CSS: expected 1 match, found {count}')
+          css = replace_once(css, '''  .technique-row {
+            grid-template-columns: 44px minmax(0, 1fr) 20px;
+            gap: 10px;
+            padding: 15px 0 16px;
+          }''', '''  .technique-row {
+            grid-template-columns: 44px minmax(0, 1fr) 20px;
+            gap: 10px;
+            padding: 13px 0 14px;
+          }''', 'tighten mobile rows')
+          css = replace_once(css, '''  .row-tags {
+            flex-wrap: nowrap;
+            overflow: hidden;
+          }
+          .row-tags span {
+            flex: 0 0 auto;
+            font-size: 9px;
+          }
+          ''', '', 'remove mobile tag CSS')
           css = replace_once(css, '  .article-header { padding-bottom: 21px; }', '  .article-header { padding-bottom: 18px; }', 'shorten mobile article header')
           css = replace_once(css, '  .answer-box { margin-top: 18px; padding: 16px; }', '  .answer-box { margin-top: 14px; padding: 16px; }', 'bring mobile quick answer forward')
           css = replace_once(css, '  .manual-intro h1 { font-size: 27px; }', '  .manual-intro h1 { font-size: 26px; }', 'narrow mobile title')
-          css = css.replace('  .row-tags span:nth-child(n+3) { display: none; }\n', '')
+          css = replace_once(css, '  .row-tags span:nth-child(n+3) { display: none; }\n', '', 'remove narrow tag rule')
           css_path.write_text(css)
 
           index_path = Path('index.html')
           index = index_path.read_text()
-          index = index.replace('styles.css?v=20260826-core1', 'styles.css?v=20260828-instrument1')
-          index = index.replace('app.js?v=20260826-consistency1', 'app.js?v=20260828-instrument1')
+          index = replace_once(index, 'styles.css?v=20260826-core1', 'styles.css?v=20260828-instrument1', 'bump CSS cache')
+          index = replace_once(index, 'app.js?v=20260826-consistency1', 'app.js?v=20260828-instrument1', 'bump JS cache')
           index_path.write_text(index)
 
           readme_path = Path('README.md')
@@ -152,8 +199,7 @@ jobs:
           - tagsは検索用metadataを主用途とし、一覧・詳細で常時見せる情報は必要最小限にする
           - UI変更は Retrieval Speed / Scan Efficiency / Action Readiness の改善理由を説明できるものだけ採用する
           '''
-          if addition.strip() not in readme:
-              readme = replace_once(readme, anchor, anchor + addition, 'document Instrument First principles')
+          readme = replace_once(readme, anchor, anchor + addition, 'document Instrument First principles')
           readme_path.write_text(readme)
           PY
       - name: Validate technique data
