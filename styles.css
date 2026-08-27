@@ -649,6 +649,72 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 }
 .sources a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
+
+.field-connection {
+  margin: 46px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-strong);
+}
+.field-connection-kicker {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 6px;
+  color: var(--faint);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .11em;
+}
+.field-connection-kicker span {
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: none;
+}
+.field-connection a {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 20px;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 0 6px;
+  text-decoration: none;
+}
+.field-connection-code {
+  color: var(--faint);
+  font: 600 10px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .08em;
+}
+.field-connection-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.field-connection-copy small {
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .09em;
+}
+.field-connection-copy strong {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  line-height: 1.45;
+}
+.field-connection-arrow {
+  color: var(--muted);
+  font-size: 14px;
+  opacity: .5;
+  transition: transform var(--motion-fast) ease, opacity var(--motion-fast) ease;
+}
+.field-connection a:hover .field-connection-arrow {
+  opacity: 1;
+  transform: translate(1px, -1px);
+}
+.field-connection a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .site-footer {
   width: min(1180px, calc(100% - 40px));
   margin: 0 auto;
@@ -680,6 +746,12 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   fill: none;
   stroke: var(--line);
   stroke-width: .75;
+}
+.field-mark .mark-signature {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: .8;
+  opacity: .62;
 }
 .field-mark .mark-primary {
   fill: none;
@@ -830,6 +902,9 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   .article-section li { font-size: 12px; }
   .evidence-note-body { display: block; }
   .evidence-note-body p { margin-top: 7px; }
+  .field-connection { margin-top: 36px; padding-top: 15px; }
+  .field-connection a { grid-template-columns: 44px minmax(0, 1fr) 18px; gap: 10px; }
+  .field-connection-copy strong { font-size: 13px; }
   .site-footer { flex-direction: column; gap: 3px; }
 }
 

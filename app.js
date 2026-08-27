@@ -166,10 +166,16 @@ function renderFieldMark(item) {
   const path = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ');
   const guideX = Math.round(16 + random() * 31);
   const guideY = Math.round(16 + random() * 31);
+  const signatureSeed = hashString(`${item.id}|signature`);
+  const signatureTicks = Array.from({ length: 3 }, (_, index) => 16 + ((signatureSeed >>> (index * 5)) & 23));
+  const categoryIndex = Math.max(0, categoryOrder.indexOf(item.category));
+  const categoryTick = 16 + ((categoryIndex * 5) % 28);
   return `
     <svg class="field-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false" data-evidence="${escapeHtml(evidence?.className || 'none')}">
       <path class="mark-frame" d="M8 16V8H16 M48 8H56V16 M56 48V56H48 M16 56H8V48" />
       <path class="mark-guide" d="M${guideX} 8V56 M8 ${guideY}H56" />
+      ${signatureTicks.map(x => `<path class="mark-signature" d="M${x} 5V8" />`).join('')}
+      <path class="mark-signature" d="M56 ${categoryTick}H59" />
       <path class="mark-primary" d="${path}" />
       ${points.map((point, index) => `<circle class="mark-node node-${index}" cx="${point.x}" cy="${point.y}" r="${point.radius}" />`).join('')}
     </svg>
@@ -416,6 +422,53 @@ function bindCopyEvents(item) {
   });
 }
 
+
+function getFieldConnection(item) {
+  const tags = new Set((item.tags || []).map(tag => normalize(tag)));
+  const candidates = techniques.filter(candidate => candidate.id !== item.id);
+  if (!candidates.length) return null;
+
+  const ranked = candidates
+    .map(candidate => {
+      const sharedTags = (candidate.tags || []).filter(tag => tags.has(normalize(tag)));
+      const sameCategory = candidate.category === item.category;
+      return {
+        candidate,
+        sharedTags,
+        sameCategory,
+        score: sharedTags.length * 3 + (sameCategory ? 2 : 0),
+        tie: hashString(`${item.id}|${candidate.id}|connection`)
+      };
+    })
+    .sort((a, b) => b.score - a.score || a.tie - b.tie);
+
+  const best = ranked[0];
+  if (best?.score > 0) {
+    return {
+      item: best.candidate,
+      relation: best.sharedTags.length ? 'SHARED SIGNAL' : 'SAME FIELD'
+    };
+  }
+
+  const fallback = candidates[hashString(`${item.id}|odd-connection`) % candidates.length];
+  return fallback ? { item: fallback, relation: 'ODD CONNECTION' } : null;
+}
+
+function renderFieldConnection(item) {
+  const connection = getFieldConnection(item);
+  if (!connection) return '';
+  return `
+    <section class="field-connection" aria-label="もうひとつのTechnique">
+      <p class="field-connection-kicker">ONE MORE <span>つながったTechnique</span></p>
+      <a href="#/${encodeURIComponent(connection.item.id)}" data-technique-id="${escapeHtml(connection.item.id)}">
+        <span class="field-connection-code">${escapeHtml(getTechniqueNumber(connection.item))}</span>
+        <span class="field-connection-copy"><small>${escapeHtml(connection.relation)}</small><strong>${escapeHtml(connection.item.title)}</strong></span>
+        <span class="field-connection-arrow" aria-hidden="true">↗</span>
+      </a>
+    </section>
+  `;
+}
+
 function renderArticle(item) {
   document.title = `${item.title} — Techniques`;
   const evidence = getEvidence(item);
@@ -443,6 +496,7 @@ function renderArticle(item) {
       ${item.tips?.length ? `<section class="article-section notes-section">${renderSectionLabel('CAUTION / NOTES', '注意・補足')}<ul>${item.tips.map(tip => `<li>${escapeHtml(tip)}</li>`).join('')}</ul></section>` : ''}
       ${evidence ? `<section class="evidence-note">${renderSectionLabel('EVIDENCE', '根拠の強さ')}<div class="evidence-note-body">${renderEvidenceBadge(item)}<p>${escapeHtml(item.evidence?.note || evidence.ja)}</p></div></section>` : ''}
       ${item.sources?.length ? `<section class="article-section sources">${renderSectionLabel('SOURCE', '参考')}<ul>${item.sources.map(source => `<li><a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.label)} <span aria-hidden="true">↗</span></a></li>`).join('')}</ul></section>` : ''}
+      ${renderFieldConnection(item)}
     </article>
   `;
   bindCopyEvents(item);
@@ -529,7 +583,7 @@ function revealRandomTechnique(id) {
   row.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
   window.setTimeout(() => row.focus({ preventScroll: true }), reduceMotion.matches ? 0 : 160);
   window.setTimeout(() => row.classList.remove('is-random-hit'), reduceMotion.matches ? 450 : 700);
-  announce(`Random Technique。${getTechniqueNumber(item)}、${item.title}`);
+  announce(`Wander。${getTechniqueNumber(item)}、${item.title}`);
 }
 
 function handleRandom() {
@@ -580,7 +634,7 @@ document.addEventListener('click', event => {
   event.preventDefault();
   const id = link.dataset.techniqueId;
   if (id) {
-    saveHomePosition();
+    if (link.classList.contains('technique-row')) saveHomePosition();
     document.querySelectorAll('.technique-row.is-transition-target').forEach(row => {
       row.classList.remove('is-transition-target');
     });
