@@ -1,0 +1,246 @@
+name: Apply Quiet Delight
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-quiet-delight.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply quiet delight changes
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 match, found {count}')
+              return text.replace(old, new, 1)
+
+          app_path = Path('app.js')
+          app = app_path.read_text()
+
+          app = replace_once(
+              app,
+              "  const guideX = Math.round(16 + random() * 31);\n  const guideY = Math.round(16 + random() * 31);\n",
+              "  const guideX = Math.round(16 + random() * 31);\n  const guideY = Math.round(16 + random() * 31);\n  const signatureSeed = hashString(`${item.id}|signature`);\n  const signatureTicks = Array.from({ length: 3 }, (_, index) => 16 + ((signatureSeed >>> (index * 5)) & 23));\n  const categoryIndex = Math.max(0, categoryOrder.indexOf(item.category));\n  const categoryTick = 16 + ((categoryIndex * 5) % 28);\n",
+              'add field mark fingerprint values'
+          )
+
+          app = replace_once(
+              app,
+              "      <path class=\"mark-guide\" d=\"M${guideX} 8V56 M8 ${guideY}H56\" />\n      <path class=\"mark-primary\" d=\"${path}\" />\n",
+              "      <path class=\"mark-guide\" d=\"M${guideX} 8V56 M8 ${guideY}H56\" />\n      ${signatureTicks.map(x => `<path class=\"mark-signature\" d=\"M${x} 5V8\" />`).join('')}\n      <path class=\"mark-signature\" d=\"M56 ${categoryTick}H59\" />\n      <path class=\"mark-primary\" d=\"${path}\" />\n",
+              'render fingerprint ticks'
+          )
+
+          connection_helpers = r'''
+function getFieldConnection(item) {
+  const tags = new Set((item.tags || []).map(tag => normalize(tag)));
+  const candidates = techniques.filter(candidate => candidate.id !== item.id);
+  if (!candidates.length) return null;
+
+  const ranked = candidates
+    .map(candidate => {
+      const sharedTags = (candidate.tags || []).filter(tag => tags.has(normalize(tag)));
+      const sameCategory = candidate.category === item.category;
+      return {
+        candidate,
+        sharedTags,
+        sameCategory,
+        score: sharedTags.length * 3 + (sameCategory ? 2 : 0),
+        tie: hashString(`${item.id}|${candidate.id}|connection`)
+      };
+    })
+    .sort((a, b) => b.score - a.score || a.tie - b.tie);
+
+  const best = ranked[0];
+  if (best?.score > 0) {
+    return {
+      item: best.candidate,
+      relation: best.sharedTags.length ? 'SHARED SIGNAL' : 'SAME FIELD'
+    };
+  }
+
+  const fallback = candidates[hashString(`${item.id}|odd-connection`) % candidates.length];
+  return fallback ? { item: fallback, relation: 'ODD CONNECTION' } : null;
+}
+
+function renderFieldConnection(item) {
+  const connection = getFieldConnection(item);
+  if (!connection) return '';
+  return `
+    <section class="field-connection" aria-label="もうひとつのTechnique">
+      <p class="field-connection-kicker">ONE MORE <span>つながったTechnique</span></p>
+      <a href="#/${encodeURIComponent(connection.item.id)}" data-technique-id="${escapeHtml(connection.item.id)}">
+        <span class="field-connection-code">${escapeHtml(getTechniqueNumber(connection.item))}</span>
+        <span class="field-connection-copy"><small>${escapeHtml(connection.relation)}</small><strong>${escapeHtml(connection.item.title)}</strong></span>
+        <span class="field-connection-arrow" aria-hidden="true">↗</span>
+      </a>
+    </section>
+  `;
+}
+'''
+
+          app = replace_once(
+              app,
+              "function renderArticle(item) {\n",
+              connection_helpers + "\nfunction renderArticle(item) {\n",
+              'add field connection helpers'
+          )
+
+          app = replace_once(
+              app,
+              "      ${item.sources?.length ? `<section class=\"article-section sources\">${renderSectionLabel('SOURCE', '参考')}<ul>${item.sources.map(source => `<li><a href=\"${escapeHtml(source.url)}\" target=\"_blank\" rel=\"noreferrer\">${escapeHtml(source.label)} <span aria-hidden=\"true\">↗</span></a></li>`).join('')}</ul></section>` : ''}\n    </article>\n",
+              "      ${item.sources?.length ? `<section class=\"article-section sources\">${renderSectionLabel('SOURCE', '参考')}<ul>${item.sources.map(source => `<li><a href=\"${escapeHtml(source.url)}\" target=\"_blank\" rel=\"noreferrer\">${escapeHtml(source.label)} <span aria-hidden=\"true\">↗</span></a></li>`).join('')}</ul></section>` : ''}\n      ${renderFieldConnection(item)}\n    </article>\n",
+              'add one more connection to article'
+          )
+
+          app = replace_once(
+              app,
+              "  if (id) {\n    saveHomePosition();\n",
+              "  if (id) {\n    if (link.classList.contains('technique-row')) saveHomePosition();\n",
+              'avoid treating article connections as home rows'
+          )
+
+          app = replace_once(
+              app,
+              "  announce(`Random Technique。${getTechniqueNumber(item)}、${item.title}`);\n",
+              "  announce(`Wander。${getTechniqueNumber(item)}、${item.title}`);\n",
+              'rename random announcement'
+          )
+
+          app_path.write_text(app)
+
+          styles_path = Path('styles.css')
+          styles = styles_path.read_text()
+
+          styles = replace_once(
+              styles,
+              ".field-mark .mark-guide {\n  fill: none;\n  stroke: var(--line);\n  stroke-width: .75;\n}\n",
+              ".field-mark .mark-guide {\n  fill: none;\n  stroke: var(--line);\n  stroke-width: .75;\n}\n.field-mark .mark-signature {\n  fill: none;\n  stroke: currentColor;\n  stroke-width: .8;\n  opacity: .62;\n}\n",
+              'style field mark signature'
+          )
+
+          connection_css = r'''
+.field-connection {
+  margin: 46px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-strong);
+}
+.field-connection-kicker {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 6px;
+  color: var(--faint);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .11em;
+}
+.field-connection-kicker span {
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: none;
+}
+.field-connection a {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 20px;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 0 6px;
+  text-decoration: none;
+}
+.field-connection-code {
+  color: var(--faint);
+  font: 600 10px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .08em;
+}
+.field-connection-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.field-connection-copy small {
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .09em;
+}
+.field-connection-copy strong {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  line-height: 1.45;
+}
+.field-connection-arrow {
+  color: var(--muted);
+  font-size: 14px;
+  opacity: .5;
+  transition: transform var(--motion-fast) ease, opacity var(--motion-fast) ease;
+}
+.field-connection a:hover .field-connection-arrow {
+  opacity: 1;
+  transform: translate(1px, -1px);
+}
+.field-connection a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+'''
+          styles = replace_once(styles, ".site-footer {\n", connection_css + ".site-footer {\n", 'add field connection styles')
+
+          styles = replace_once(
+              styles,
+              "  .evidence-note-body p { margin-top: 7px; }\n  .site-footer { flex-direction: column; gap: 3px; }\n",
+              "  .evidence-note-body p { margin-top: 7px; }\n  .field-connection { margin-top: 36px; padding-top: 15px; }\n  .field-connection a { grid-template-columns: 44px minmax(0, 1fr) 18px; gap: 10px; }\n  .field-connection-copy strong { font-size: 13px; }\n  .site-footer { flex-direction: column; gap: 3px; }\n",
+              'add mobile field connection styles'
+          )
+
+          styles_path.write_text(styles)
+
+          index_path = Path('index.html')
+          index = index_path.read_text()
+          index = replace_once(index, 'styles.css?v=20260828-instrument1', 'styles.css?v=20260828-delight1', 'bump styles cache')
+          index = replace_once(index, 'app.js?v=20260828-distance1', 'app.js?v=20260828-delight1', 'bump app cache')
+          index = replace_once(index, 'aria-label="Random Techniqueを選ぶ"', 'aria-label="Wander — Techniqueをひとつ選ぶ"', 'rename wander aria label')
+          index = replace_once(index, '<span aria-hidden="true">↝</span><b>Random</b>', '<span aria-hidden="true">↝</span><b>Wander</b>', 'rename random button')
+          index_path.write_text(index)
+
+          readme_path = Path('README.md')
+          readme = readme_path.read_text()
+          anchor = '- 検索改善は新しいUI・dependency・network requestを増やさず、既存JSONだけで成立させる\n'
+          addition = '''- Quiet Delightは「色やanimationを増やす」ではなく、既存のT-number / Field Mark / connectionsを使って小さな発見を作る
+- Field Markはid由来のsignature、category由来のtick、Evidence表現を組み合わせたTechnique fingerprintとして扱う
+- 記事末尾のONE MOREは候補を1件だけ表示し、shared tags / same category / deterministic odd connectionから軽く導出する
+- RandomはWANDERとして「用事がないときの回遊入口」に位置づける
+'''
+          if addition.strip() not in readme:
+              readme = replace_once(readme, anchor, anchor + addition, 'document quiet delight rules')
+          readme_path.write_text(readme)
+          PY
+
+      - name: Check JavaScript syntax
+        run: node --check app.js
+
+      - name: Validate technique data
+        run: node scripts/validate-techniques.mjs
+
+      - name: Commit changes and remove temporary workflow
+        run: |
+          rm .github/workflows/apply-quiet-delight.yml
+          git config user.name "silovar-uk"
+          git config user.email "46244124+silovar-uk@users.noreply.github.com"
+          git add app.js styles.css index.html README.md .github/workflows/apply-quiet-delight.yml
+          git commit -m "Add quiet delight and field connections"
+          git push
