@@ -182,6 +182,30 @@ function renderFieldMark(item) {
   `;
 }
 
+
+function renderFieldShelf() {
+  const shelfItems = [...techniques].sort((a, b) => getTechniqueNumber(a).localeCompare(getTechniqueNumber(b)));
+  return `
+    <section id="fieldShelf" class="field-shelf" aria-labelledby="fieldShelfTitle">
+      <div class="field-shelf-head">
+        <div>
+          <span>FIELD SHELF</span>
+          <strong id="fieldShelfTitle">技の標本棚</strong>
+        </div>
+        <small>${techniques.length} SPECIMENS / BROWSE WITHOUT A QUERY</small>
+      </div>
+      <div class="field-shelf-track">
+        ${shelfItems.map(item => `
+          <a class="field-shelf-item" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(getTechniqueNumber(item))} ${escapeHtml(item.title)}">
+            <span class="shelf-mark">${renderFieldMark(item)}</span>
+            <span class="shelf-code">${escapeHtml(getTechniqueNumber(item))}</span>
+          </a>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function renderTechniqueRow(item) {
   const isTransitionTarget = item.id === lastSelectedId;
   return `
@@ -239,6 +263,8 @@ function updateLibrary() {
   if (!host) return;
   host.innerHTML = renderTechniqueResults(items);
   const isFiltered = Boolean(searchQuery.trim()) || activeCategory !== 'すべて';
+  const shelf = document.querySelector('#fieldShelf');
+  if (shelf) shelf.hidden = isFiltered;
   const title = document.querySelector('#libraryTitle');
   const count = document.querySelector('#libraryCount');
   if (title) title.textContent = isFiltered ? '条件に合うTechnique' : '最近のTechnique';
@@ -335,8 +361,8 @@ function renderHome() {
         <span id="searchReadout" class="search-readout" aria-hidden="true">${escapeHtml(getSearchReadout(items))}</span>
         <kbd>/</kbd>
       </div>
-      <p class="search-hint">タイトル・タグ・本文まで検索</p>
     </section>
+    ${renderFieldShelf()}
     <section class="library-tools" aria-label="Techniquesを絞り込む">
       <div class="filters" aria-label="カテゴリで絞り込む">
         ${categories.map(category => {
@@ -463,7 +489,7 @@ function renderFieldConnection(item) {
       <a href="#/${encodeURIComponent(connection.item.id)}" data-technique-id="${escapeHtml(connection.item.id)}">
         <span class="field-connection-code">${escapeHtml(getTechniqueNumber(connection.item))}</span>
         <span class="field-connection-copy"><small>${escapeHtml(connection.relation)}</small><strong>${escapeHtml(connection.item.title)}</strong></span>
-        <span class="field-connection-arrow" aria-hidden="true">↗</span>
+        <span class="field-connection-mark" aria-hidden="true">${renderFieldMark(connection.item)}</span>
       </a>
     </section>
   `;
@@ -634,7 +660,7 @@ document.addEventListener('click', event => {
   event.preventDefault();
   const id = link.dataset.techniqueId;
   if (id) {
-    if (link.classList.contains('technique-row')) saveHomePosition();
+    if (link.classList.contains('technique-row') || link.classList.contains('field-shelf-item')) saveHomePosition();
     document.querySelectorAll('.technique-row.is-transition-target').forEach(row => {
       row.classList.remove('is-transition-target');
     });
