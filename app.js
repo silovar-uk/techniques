@@ -600,8 +600,9 @@ function chooseRandomTechnique() {
 }
 
 function revealRandomTechnique(id) {
-  const row = [...document.querySelectorAll('[data-technique-id]')]
-    .find(element => element.dataset.techniqueId === id);
+  const matchingTargets = [...document.querySelectorAll('[data-technique-id]')]
+    .filter(element => element.dataset.techniqueId === id);
+  const row = matchingTargets.find(element => !element.closest('[hidden]')) || matchingTargets[0];
   const item = techniques.find(entry => entry.id === id);
   if (!row || !item) return;
   document.querySelectorAll('.is-random-hit').forEach(element => element.classList.remove('is-random-hit'));
