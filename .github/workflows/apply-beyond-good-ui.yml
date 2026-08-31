@@ -1,0 +1,284 @@
+name: Apply Beyond Good UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-beyond-good-ui.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply Field Shelf and quiet delight upgrades
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text, old, new, label):
+              if old not in text:
+                  raise SystemExit(f'anchor not found: {label}')
+              return text.replace(old, new, 1)
+
+          app_path = Path('app.js')
+          app = app_path.read_text()
+
+          shelf_function = r'''
+          function renderFieldShelf() {
+            const shelfItems = [...techniques].sort((a, b) => getTechniqueNumber(a).localeCompare(getTechniqueNumber(b)));
+            return `
+              <section id="fieldShelf" class="field-shelf" aria-labelledby="fieldShelfTitle">
+                <div class="field-shelf-head">
+                  <div>
+                    <span>FIELD SHELF</span>
+                    <strong id="fieldShelfTitle">技の標本棚</strong>
+                  </div>
+                  <small>${techniques.length} SPECIMENS / BROWSE WITHOUT A QUERY</small>
+                </div>
+                <div class="field-shelf-track">
+                  ${shelfItems.map(item => `
+                    <a class="field-shelf-item" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(getTechniqueNumber(item))} ${escapeHtml(item.title)}">
+                      <span class="shelf-mark">${renderFieldMark(item)}</span>
+                      <span class="shelf-code">${escapeHtml(getTechniqueNumber(item))}</span>
+                    </a>
+                  `).join('')}
+                </div>
+              </section>
+            `;
+          }
+
+          '''
+          app = replace_once(app, 'function renderTechniqueRow(item) {', shelf_function + 'function renderTechniqueRow(item) {', 'renderTechniqueRow')
+
+          app = replace_once(
+              app,
+              "  const isFiltered = Boolean(searchQuery.trim()) || activeCategory !== 'すべて';\n  const title = document.querySelector('#libraryTitle');",
+              "  const isFiltered = Boolean(searchQuery.trim()) || activeCategory !== 'すべて';\n  const shelf = document.querySelector('#fieldShelf');\n  if (shelf) shelf.hidden = isFiltered;\n  const title = document.querySelector('#libraryTitle');",
+              'updateLibrary shelf toggle'
+          )
+
+          app = replace_once(
+              app,
+              '      <p class="search-hint">タイトル・タグ・本文まで検索</p>\n    </section>\n    <section class="library-tools" aria-label="Techniquesを絞り込む">',
+              '    </section>\n    ${renderFieldShelf()}\n    <section class="library-tools" aria-label="Techniquesを絞り込む">',
+              'home shelf insertion'
+          )
+
+          app = replace_once(
+              app,
+              '        <span class="field-connection-arrow" aria-hidden="true">↗</span>',
+              '        <span class="field-connection-mark" aria-hidden="true">${renderFieldMark(connection.item)}</span>',
+              'field connection mark'
+          )
+
+          app = replace_once(
+              app,
+              "    if (link.classList.contains('technique-row')) saveHomePosition();",
+              "    if (link.classList.contains('technique-row') || link.classList.contains('field-shelf-item')) saveHomePosition();",
+              'shelf navigation position'
+          )
+
+          app_path.write_text(app)
+
+          css_path = Path('styles.css')
+          css = css_path.read_text()
+          css = replace_once(css, '.manual-intro { padding: 24px 0 0; }', '.manual-intro { padding: 38px 0 0; }', 'manual intro spacing')
+          css = replace_once(css, '  font-size: clamp(27px, 3vw, 36px);', '  font-size: clamp(38px, 5vw, 62px);', 'home title scale')
+          css = replace_once(css, '  grid-template-columns: minmax(0, 1fr) 92px;', '  grid-template-columns: minmax(0, 1fr) 124px;', 'article header mark column')
+          css = replace_once(css, '  width: 92px;\n  height: 92px;', '  width: 124px;\n  height: 124px;', 'article mark size')
+          css = replace_once(css, '  grid-template-columns: 64px minmax(0, 1fr) 20px;', '  grid-template-columns: 64px minmax(0, 1fr) 38px;', 'field connection grid')
+
+          shelf_css = r'''
+
+          .field-shelf {
+            margin: 20px 0 0;
+            padding: 13px 0 12px;
+            border-top: 1px solid var(--line-strong);
+            border-bottom: 1px solid var(--line);
+          }
+          .field-shelf[hidden] { display: none; }
+          .field-shelf-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 9px;
+          }
+          .field-shelf-head > div {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+          }
+          .field-shelf-head span,
+          .field-shelf-head small {
+            color: var(--faint);
+            font: 600 8px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            letter-spacing: .1em;
+          }
+          .field-shelf-head strong {
+            font-size: 11px;
+            font-weight: 700;
+          }
+          .field-shelf-track {
+            position: relative;
+            display: flex;
+            gap: 11px;
+            align-items: flex-start;
+            overflow-x: auto;
+            padding: 4px 1px 2px;
+            scrollbar-width: none;
+          }
+          .field-shelf-track::-webkit-scrollbar { display: none; }
+          .field-shelf-track::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 24px;
+            border-top: 1px solid var(--line);
+            pointer-events: none;
+          }
+          .field-shelf-item {
+            position: relative;
+            z-index: 1;
+            flex: 0 0 46px;
+            display: grid;
+            justify-items: center;
+            gap: 3px;
+            padding: 3px 3px 2px;
+            background: var(--bg);
+            color: var(--faint);
+            text-decoration: none;
+          }
+          .shelf-mark {
+            width: 38px;
+            height: 38px;
+            display: block;
+            opacity: .52;
+            transform: scale(.94);
+            transition: opacity var(--motion-fast) ease, transform var(--motion-fast) ease;
+          }
+          .shelf-code {
+            font: 600 8px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            letter-spacing: .04em;
+          }
+          .field-shelf-item:hover,
+          .field-shelf-item:focus-visible { color: var(--ink); }
+          .field-shelf-item:hover .shelf-mark,
+          .field-shelf-item:focus-visible .shelf-mark {
+            opacity: 1;
+            transform: scale(1);
+          }
+          .field-shelf-item:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+          }
+          .field-shelf-item.is-random-hit {
+            color: var(--accent);
+          }
+          .field-shelf-item.is-random-hit .shelf-mark {
+            opacity: 1;
+            transform: scale(1.08);
+          }
+          '''
+          css = replace_once(css, '.search-hint {\n  margin: 6px 4px 0;\n  color: var(--faint);\n  font-size: 10px;\n}\n', '.search-hint {\n  margin: 6px 4px 0;\n  color: var(--faint);\n  font-size: 10px;\n}\n' + shelf_css, 'field shelf css')
+
+          old_connection = r'''.field-connection-arrow {
+            color: var(--muted);
+            font-size: 14px;
+            opacity: .5;
+            transition: transform var(--motion-fast) ease, opacity var(--motion-fast) ease;
+          }
+          .field-connection a:hover .field-connection-arrow {
+            opacity: 1;
+            transform: translate(1px, -1px);
+          }
+          '''
+          new_connection = r'''.field-connection-mark {
+            width: 34px;
+            height: 34px;
+            display: block;
+            opacity: .48;
+            transform: scale(.9);
+            transition: opacity var(--motion-fast) ease, transform var(--motion-fast) ease;
+          }
+          .field-connection a:hover .field-connection-mark,
+          .field-connection a:focus-visible .field-connection-mark {
+            opacity: 1;
+            transform: scale(1);
+          }
+          '''
+          css = replace_once(css, old_connection, new_connection, 'connection mark css')
+
+          animation_css = r'''
+
+          @keyframes field-draw {
+            from { stroke-dashoffset: 150; opacity: .25; }
+            to { stroke-dashoffset: 0; opacity: 1; }
+          }
+          @keyframes field-node-in {
+            from { opacity: 0; transform: scale(.55); }
+            to { opacity: 1; transform: scale(1); }
+          }
+          @media (prefers-reduced-motion: no-preference) {
+            .article-mark .mark-primary {
+              stroke-dasharray: 150;
+              stroke-dashoffset: 150;
+              animation: field-draw .52s cubic-bezier(.2,.7,.2,1) .06s forwards;
+            }
+            .article-mark .mark-node {
+              transform-box: fill-box;
+              transform-origin: center;
+              animation: field-node-in .18s ease .34s both;
+            }
+            .article-mark .node-1 { animation-delay: .39s; }
+            .article-mark .node-2 { animation-delay: .44s; }
+            .article-mark .node-3 { animation-delay: .49s; }
+          }
+          '''
+          css = replace_once(css, '@media (hover: hover) and (pointer: fine) {', animation_css + '\n@media (hover: hover) and (pointer: fine) {', 'field mark draw animation')
+
+          mobile_css = r'''
+
+          @media (max-width: 760px) {
+            .field-shelf { margin-top: 15px; padding-top: 10px; }
+            .field-shelf-head small { display: none; }
+            .field-shelf-track { margin-right: -14px; padding-right: 14px; gap: 9px; }
+            .field-shelf-item { flex-basis: 43px; }
+            .shelf-mark { width: 35px; height: 35px; }
+          }
+          '''
+          css += mobile_css
+          css_path.write_text(css)
+
+          index_path = Path('index.html')
+          index = index_path.read_text()
+          index = replace_once(index, 'styles.css?v=20260828-delight1', 'styles.css?v=20260831-field-shelf1', 'css cache version')
+          index = replace_once(index, 'app.js?v=20260828-delight1', 'app.js?v=20260831-field-shelf1', 'js cache version')
+          index_path.write_text(index)
+          PY
+
+      - name: Validate JavaScript and technique data
+        run: |
+          node --check app.js
+          node scripts/validate-techniques.mjs
+          grep -q 'FIELD SHELF' app.js
+          grep -q 'field-shelf' styles.css
+
+      - name: Commit UI and remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/apply-beyond-good-ui.yml
+          git config user.name 'silovar-uk'
+          git config user.email '46244124+silovar-uk@users.noreply.github.com'
+          git add app.js styles.css index.html .github/workflows/apply-beyond-good-ui.yml
+          git commit -m 'Turn Techniques into a field shelf'
+          git push
