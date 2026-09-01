@@ -1,0 +1,211 @@
+from pathlib import Path
+
+app_path = Path('app.js')
+app = app_path.read_text()
+
+anchor = "const searchIndex = new Map();\n"
+insert = """const searchIndex = new Map();
+
+const FIELD_PALETTE = {
+  'PC・スマホ': { color: '#315f91', soft: '#e8eef5', name: 'SIGNAL BLUE' },
+  '動画・音声': { color: '#8a4f7d', soft: '#f3e8ef', name: 'TAPE PLUM' },
+  'Web・開発': { color: '#236c66', soft: '#e3f0ee', name: 'TERMINAL TEAL' },
+  '仕事・事務': { color: '#5f6540', soft: '#edefe1', name: 'DESK MOSS' },
+  '暮らし': { color: '#a15c3f', soft: '#f4e7df', name: 'CLAY' },
+  'お金': { color: '#8a6a22', soft: '#f3ecd8', name: 'LEDGER OCHRE' },
+  '移動・旅行': { color: '#3f7080', soft: '#e5eff2', name: 'ROUTE BLUE' },
+  '健康・身体': { color: '#a34f4e', soft: '#f5e3e2', name: 'PULSE CORAL' },
+  '思考・学習': { color: '#66538f', soft: '#ece7f4', name: 'THOUGHT VIOLET' },
+  '文章・表現': { color: '#9a4f68', soft: '#f4e4e9', name: 'INK BLOOM' },
+  'その他': { color: '#6d6b62', soft: '#eceae5', name: 'FIELD GRAY' }
+};
+const DEFAULT_FIELD = { color: '#184f42', soft: '#dfece7', name: 'ALL FIELDS' };
+
+function getFieldPalette(value) {
+  const category = typeof value === 'string' ? value : value?.category;
+  return FIELD_PALETTE[category] || DEFAULT_FIELD;
+}
+
+function renderFieldStyle(value) {
+  const field = getFieldPalette(value);
+  return `--field-color:${field.color};--field-soft:${field.soft}`;
+}
+"""
+if anchor not in app:
+    raise SystemExit('searchIndex anchor missing')
+app = app.replace(anchor, insert, 1)
+
+replacements = [
+    (
+        '          <a class="field-shelf-item" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(getTechniqueNumber(item))} ${escapeHtml(item.title)}">',
+        '          <a class="field-shelf-item" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}" style="${renderFieldStyle(item)}" title="${escapeHtml(getTechniqueNumber(item))} · ${escapeHtml(getFieldPalette(item).name)}" aria-label="${escapeHtml(getTechniqueNumber(item))} ${escapeHtml(item.title)}">'
+    ),
+    (
+        '    <a class="technique-row${isTransitionTarget ? \' is-transition-target\' : \'\'}" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}">',
+        '    <a class="technique-row${isTransitionTarget ? \' is-transition-target\' : \'\'}" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}" style="${renderFieldStyle(item)}">'
+    ),
+    (
+        '          return `<button class="chip ${active ? \'is-active\' : \'\'}" data-category="${escapeHtml(category)}" type="button" aria-pressed="${active}">${escapeHtml(category)}</button>`;',
+        '          return `<button class="chip ${active ? \'is-active\' : \'\'}" data-category="${escapeHtml(category)}" type="button" style="${renderFieldStyle(category)}" aria-pressed="${active}">${escapeHtml(category)}</button>`;'
+    ),
+    (
+        '      <a href="#/${encodeURIComponent(connection.item.id)}" data-technique-id="${escapeHtml(connection.item.id)}">',
+        '      <a href="#/${encodeURIComponent(connection.item.id)}" data-technique-id="${escapeHtml(connection.item.id)}" style="${renderFieldStyle(connection.item)}">'
+    ),
+    (
+        '    <article class="article" aria-labelledby="articleTitle">',
+        '    <article class="article" aria-labelledby="articleTitle" style="${renderFieldStyle(item)}">'
+    ),
+    (
+        '            <p class="eyebrow">${escapeHtml(item.category)}</p>',
+        '            <p class="eyebrow article-field-label"><i aria-hidden="true"></i><span>${escapeHtml(item.category)}</span><small>${escapeHtml(getFieldPalette(item).name)}</small></p>'
+    )
+]
+for old, new in replacements:
+    if old not in app:
+        raise SystemExit(f'app anchor missing: {old[:80]}')
+    app = app.replace(old, new, 1)
+
+app_path.write_text(app)
+
+css_path = Path('styles.css')
+css = css_path.read_text()
+marker = '/* FIELD COLOR SYSTEM / 2026-09 */'
+if marker in css:
+    raise SystemExit('field color CSS already exists')
+css += r'''
+
+/* FIELD COLOR SYSTEM / 2026-09 */
+.field-mark { color: var(--field-color, var(--accent)); }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; }
+.chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--field-color, var(--accent));
+  opacity: .28;
+  transition: opacity var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+.chip:hover::before,
+.chip.is-active::before { opacity: .95; transform: scale(1.08); }
+.chip.is-active { box-shadow: inset 0 -1px 0 var(--field-color, var(--ink)); }
+.chip[data-category="すべて"]::before {
+  background: conic-gradient(#315f91, #8a4f7d, #236c66, #a15c3f, #66538f, #315f91);
+}
+
+.field-shelf-item {
+  border-radius: 3px;
+  transition: background var(--motion-fast) ease, color var(--motion-fast) ease;
+}
+.shelf-mark { color: var(--field-color, var(--accent)); }
+.field-shelf-item:hover,
+.field-shelf-item:focus-visible {
+  background: var(--field-soft, var(--accent-soft));
+  color: var(--field-color, var(--ink));
+}
+.field-shelf-item.is-random-hit {
+  background: var(--field-soft, var(--accent-soft));
+  color: var(--field-color, var(--accent));
+  box-shadow: inset 0 -2px 0 var(--field-color, var(--accent));
+}
+
+.technique-row::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: -7px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--field-color, var(--accent));
+  opacity: 0;
+  transform: scaleY(.45);
+  transition: opacity var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+.technique-row .row-meta { color: var(--field-color, var(--accent)); }
+.technique-row.is-random-hit {
+  background: var(--field-soft, var(--accent-soft));
+  box-shadow: inset 2px 0 0 var(--field-color, var(--accent));
+}
+@media (hover: hover) and (pointer: fine) {
+  .technique-row:hover::before { opacity: .78; transform: scaleY(1); }
+}
+
+.article-field-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--field-color, var(--accent)) !important;
+}
+.article-field-label i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--field-color, var(--accent));
+  box-shadow: 0 0 0 4px var(--field-soft, var(--accent-soft));
+}
+.article-field-label small {
+  color: var(--faint);
+  font: 600 8px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .09em;
+}
+.article-mark { color: var(--field-color, var(--accent)); }
+.article .answer-box {
+  border-left-color: var(--field-color, var(--accent));
+  background: var(--field-soft, rgba(223, 236, 231, .58));
+}
+.article .answer-box .section-label span,
+.article .answer-box .section-label strong { color: var(--field-color, var(--accent)); }
+
+.field-connection a {
+  border-radius: 4px;
+  transition: background var(--motion-fast) ease;
+}
+.field-connection a:hover,
+.field-connection a:focus-visible { background: var(--field-soft, transparent); }
+.field-connection-copy small { color: var(--field-color, var(--accent)); }
+.field-connection-mark { color: var(--field-color, var(--accent)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .chip::before,
+  .technique-row::before,
+  .field-shelf-item,
+  .field-connection a { transition: none; }
+}
+@media (max-width: 760px) {
+  .chip { gap: 5px; }
+  .chip::before { width: 5px; height: 5px; }
+  .technique-row::before { left: -4px; }
+  .article-field-label small { display: none; }
+}
+'''
+css_path.write_text(css)
+
+index_path = Path('index.html')
+index = index_path.read_text()
+index = index.replace('styles.css?v=20260831-field-shelf1', 'styles.css?v=20260901-field-color1')
+index = index.replace('app.js?v=20260831-field-shelf1', 'app.js?v=20260901-field-color1')
+index_path.write_text(index)
+
+colors = ['#315f91','#8a4f7d','#236c66','#5f6540','#a15c3f','#8a6a22','#3f7080','#a34f4e','#66538f','#9a4f68','#6d6b62']
+backgrounds = ['#fffef9', '#f4f2ec']
+def lum(h):
+    h = h.lstrip('#')
+    rgb = [int(h[i:i+2], 16) / 255 for i in (0,2,4)]
+    def conv(c): return c/12.92 if c <= .04045 else ((c+.055)/1.055)**2.4
+    r,g,b = [conv(c) for c in rgb]
+    return .2126*r + .7152*g + .0722*b
+def contrast(a,b):
+    x,y = lum(a), lum(b)
+    hi,lo = max(x,y), min(x,y)
+    return (hi+.05)/(lo+.05)
+for color in colors:
+    for bg in backgrounds:
+        ratio = contrast(color,bg)
+        if ratio < 4.5:
+            raise SystemExit(f'contrast failed {color} on {bg}: {ratio:.2f}')
+print('Field palette contrast >= 4.5:1 on paper and field backgrounds')
