@@ -20,6 +20,31 @@ let copyResetTimer = 0;
 let lastInteractionWasKeyboard = false;
 const searchIndex = new Map();
 
+const FIELD_PALETTE = {
+  'PC・スマホ': { color: '#315f91', soft: '#e8eef5', name: 'SIGNAL BLUE' },
+  '動画・音声': { color: '#8a4f7d', soft: '#f3e8ef', name: 'TAPE PLUM' },
+  'Web・開発': { color: '#236c66', soft: '#e3f0ee', name: 'TERMINAL TEAL' },
+  '仕事・事務': { color: '#5f6540', soft: '#edefe1', name: 'DESK MOSS' },
+  '暮らし': { color: '#a15c3f', soft: '#f4e7df', name: 'CLAY' },
+  'お金': { color: '#8a6a22', soft: '#f3ecd8', name: 'LEDGER OCHRE' },
+  '移動・旅行': { color: '#3f7080', soft: '#e5eff2', name: 'ROUTE BLUE' },
+  '健康・身体': { color: '#a34f4e', soft: '#f5e3e2', name: 'PULSE CORAL' },
+  '思考・学習': { color: '#66538f', soft: '#ece7f4', name: 'THOUGHT VIOLET' },
+  '文章・表現': { color: '#9a4f68', soft: '#f4e4e9', name: 'INK BLOOM' },
+  'その他': { color: '#6d6b62', soft: '#eceae5', name: 'FIELD GRAY' }
+};
+const DEFAULT_FIELD = { color: '#184f42', soft: '#dfece7', name: 'ALL FIELDS' };
+
+function getFieldPalette(value) {
+  const category = typeof value === 'string' ? value : value?.category;
+  return FIELD_PALETTE[category] || DEFAULT_FIELD;
+}
+
+function renderFieldStyle(value) {
+  const field = getFieldPalette(value);
+  return `--field-color:${field.color};--field-soft:${field.soft}`;
+}
+
 const escapeHtml = (value = '') => String(value)
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
@@ -196,7 +221,7 @@ function renderFieldShelf() {
       </div>
       <div class="field-shelf-track">
         ${shelfItems.map(item => `
-          <a class="field-shelf-item" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(getTechniqueNumber(item))} ${escapeHtml(item.title)}">
+          <a class="field-shelf-item" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}" style="${renderFieldStyle(item)}" title="${escapeHtml(getTechniqueNumber(item))} · ${escapeHtml(getFieldPalette(item).name)}" aria-label="${escapeHtml(getTechniqueNumber(item))} ${escapeHtml(item.title)}">
             <span class="shelf-mark">${renderFieldMark(item)}</span>
             <span class="shelf-code">${escapeHtml(getTechniqueNumber(item))}</span>
           </a>
@@ -209,7 +234,7 @@ function renderFieldShelf() {
 function renderTechniqueRow(item) {
   const isTransitionTarget = item.id === lastSelectedId;
   return `
-    <a class="technique-row${isTransitionTarget ? ' is-transition-target' : ''}" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}">
+    <a class="technique-row${isTransitionTarget ? ' is-transition-target' : ''}" href="#/${encodeURIComponent(item.id)}" data-technique-id="${escapeHtml(item.id)}" style="${renderFieldStyle(item)}">
       <div class="row-index"><span>${escapeHtml(getTechniqueNumber(item))}</span></div>
       <div class="row-main">
         <div class="row-meta">
@@ -367,7 +392,7 @@ function renderHome() {
       <div class="filters" aria-label="カテゴリで絞り込む">
         ${categories.map(category => {
           const active = category === activeCategory;
-          return `<button class="chip ${active ? 'is-active' : ''}" data-category="${escapeHtml(category)}" type="button" aria-pressed="${active}">${escapeHtml(category)}</button>`;
+          return `<button class="chip ${active ? 'is-active' : ''}" data-category="${escapeHtml(category)}" type="button" style="${renderFieldStyle(category)}" aria-pressed="${active}">${escapeHtml(category)}</button>`;
         }).join('')}
       </div>
     </section>
@@ -486,7 +511,7 @@ function renderFieldConnection(item) {
   return `
     <section class="field-connection" aria-label="もうひとつのTechnique">
       <p class="field-connection-kicker">ONE MORE <span>つながったTechnique</span></p>
-      <a href="#/${encodeURIComponent(connection.item.id)}" data-technique-id="${escapeHtml(connection.item.id)}">
+      <a href="#/${encodeURIComponent(connection.item.id)}" data-technique-id="${escapeHtml(connection.item.id)}" style="${renderFieldStyle(connection.item)}">
         <span class="field-connection-code">${escapeHtml(getTechniqueNumber(connection.item))}</span>
         <span class="field-connection-copy"><small>${escapeHtml(connection.relation)}</small><strong>${escapeHtml(connection.item.title)}</strong></span>
         <span class="field-connection-mark" aria-hidden="true">${renderFieldMark(connection.item)}</span>
@@ -499,7 +524,7 @@ function renderArticle(item) {
   document.title = `${item.title} — Techniques`;
   const evidence = getEvidence(item);
   app.innerHTML = `
-    <article class="article" aria-labelledby="articleTitle">
+    <article class="article" aria-labelledby="articleTitle" style="${renderFieldStyle(item)}">
       <div class="article-utility">
         <a class="back" href="#/">← Library</a>
         <div class="article-code"><span>${escapeHtml(getTechniqueNumber(item))}</span>${renderEvidenceBadge(item)}</div>
@@ -507,7 +532,7 @@ function renderArticle(item) {
       <header class="article-header">
         <div class="article-header-grid">
           <div class="article-heading-copy">
-            <p class="eyebrow">${escapeHtml(item.category)}</p>
+            <p class="eyebrow article-field-label"><i aria-hidden="true"></i><span>${escapeHtml(item.category)}</span><small>${escapeHtml(getFieldPalette(item).name)}</small></p>
             <h1 id="articleTitle" tabindex="-1">${escapeHtml(item.title)}</h1>
           </div>
           <div class="article-mark">${renderFieldMark(item)}</div>

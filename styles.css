@@ -1065,3 +1065,112 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   .field-shelf-item { flex-basis: 43px; }
   .shelf-mark { width: 35px; height: 35px; }
 }
+
+
+/* FIELD COLOR SYSTEM / 2026-09 */
+.field-mark { color: var(--field-color, var(--accent)); }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; }
+.chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--field-color, var(--accent));
+  opacity: .28;
+  transition: opacity var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+.chip:hover::before,
+.chip.is-active::before { opacity: .95; transform: scale(1.08); }
+.chip.is-active { box-shadow: inset 0 -1px 0 var(--field-color, var(--ink)); }
+.chip[data-category="すべて"]::before {
+  background: conic-gradient(#315f91, #8a4f7d, #236c66, #a15c3f, #66538f, #315f91);
+}
+
+.field-shelf-item {
+  border-radius: 3px;
+  transition: background var(--motion-fast) ease, color var(--motion-fast) ease;
+}
+.shelf-mark { color: var(--field-color, var(--accent)); }
+.field-shelf-item:hover,
+.field-shelf-item:focus-visible {
+  background: var(--field-soft, var(--accent-soft));
+  color: var(--field-color, var(--ink));
+}
+.field-shelf-item.is-random-hit {
+  background: var(--field-soft, var(--accent-soft));
+  color: var(--field-color, var(--accent));
+  box-shadow: inset 0 -2px 0 var(--field-color, var(--accent));
+}
+
+.technique-row::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: -7px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--field-color, var(--accent));
+  opacity: 0;
+  transform: scaleY(.45);
+  transition: opacity var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+.technique-row .row-meta { color: var(--field-color, var(--accent)); }
+.technique-row.is-random-hit {
+  background: var(--field-soft, var(--accent-soft));
+  box-shadow: inset 2px 0 0 var(--field-color, var(--accent));
+}
+@media (hover: hover) and (pointer: fine) {
+  .technique-row:hover::before { opacity: .78; transform: scaleY(1); }
+}
+
+.article-field-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--field-color, var(--accent)) !important;
+}
+.article-field-label i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--field-color, var(--accent));
+  box-shadow: 0 0 0 4px var(--field-soft, var(--accent-soft));
+}
+.article-field-label small {
+  color: var(--faint);
+  font: 600 8px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .09em;
+}
+.article-mark { color: var(--field-color, var(--accent)); }
+.article .answer-box {
+  border-left-color: var(--field-color, var(--accent));
+  background: var(--field-soft, rgba(223, 236, 231, .58));
+}
+.article .answer-box .section-label span,
+.article .answer-box .section-label strong { color: var(--field-color, var(--accent)); }
+
+.field-connection a {
+  border-radius: 4px;
+  transition: background var(--motion-fast) ease;
+}
+.field-connection a:hover,
+.field-connection a:focus-visible { background: var(--field-soft, transparent); }
+.field-connection-copy small { color: var(--field-color, var(--accent)); }
+.field-connection-mark { color: var(--field-color, var(--accent)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .chip::before,
+  .technique-row::before,
+  .field-shelf-item,
+  .field-connection a { transition: none; }
+}
+@media (max-width: 760px) {
+  .chip { gap: 5px; }
+  .chip::before { width: 5px; height: 5px; }
+  .technique-row::before { left: -4px; }
+  .article-field-label small { display: none; }
+}
