@@ -1,0 +1,95 @@
+[
+  {
+    "id": "sketch-ui-before-generating-final-design",
+    "number": "T-017",
+    "title": "AIにUIを作らせる前に、一度ラフスケッチへ落とす",
+    "summary": "UI要件から完成画面へ直行せず、目的・情報階層を抽出したあと、手書き風の低忠実度スケッチを複数作る。完成度を一度下げることで、既知のカード／グリッドへ早く収束するのを防ぎ、構造やインタラクションを考え直す。",
+    "category": "Web・開発",
+    "tags": ["UI", "AI", "デザイン", "スケッチ", "手書き", "low-fidelity", "プロトタイピング", "design fixation", "interaction", "vibe coding"],
+    "updated": "2026-09-03",
+    "quickAnswer": "AIへいきなり「完成UIを作って」と頼まない。まず目的・最重要アクション・情報階層・状態遷移を抽出し、紙に描いたようなlow-fidelity sketchを最低3案作る。1案は標準、1案は情報構造を大胆に変える、1案はinteraction中心。矢印やbefore/afterで動きも描いて比較してから、初めてproduction UIへ戻す。",
+    "steps": [
+      "元のUI要望から、目的・ユーザー・最重要アクション・情報の優先順位・状態・遷移を抜き出す。最初から「カード」「サイドバー」などのコンポーネント名へ寄せすぎない。",
+      "完成UIではなく、四角・線・矢印・短いメモだけのlow-fidelity sketchを最低3案作る。Aは普通に分かりやすい案、Bは情報構造を大胆に変える案、Cはinteraction中心の案にする。",
+      "静止画だけで終えず、主要操作ごとに BEFORE → TRIGGER → CHANGE → AFTER を描く。tap、expand、reveal、drag、scrollなど、状態変化を矢印や連続コマで表す。",
+      "3案を並べて「AIへ普通に作らせても出そうか」「最初の案へ固定されていないか」を監査する。必要ならスケッチを見ず、文章とユーザージャーニーだけから4案目を作る。",
+      "最後にスケッチから情報階層・空間関係・interactionだけを抽出し、既存Design System、アクセシビリティ、レスポンシブ、実装制約へ戻してproduction UIを作る。"
+    ],
+    "commands": [
+      {
+        "label": "SKETCH BEFORE UIプロンプト",
+        "code": "まだ完成UIを作らないでください。まずこのUI要件から、目的・最重要アクション・情報階層・ユーザー行動・状態遷移を抽出してください。その後、紙とペンでラフに描いたようなlow-fidelity sketchとして、明確に異なる3案を作ってください。Aは標準、Bは情報構造を大胆に変える、Cはinteraction中心にしてください。カード、グリッド、Heroなど既知のUIパターンへ早く収束しないでください。主要操作は BEFORE → TRIGGER → CHANGE → AFTER の矢印や連続コマでも示してください。3案を比較・批判し、最初の案へのfixationも確認してから、初めてproduction UIへ戻してください。",
+        "note": "HAND-DRAWN STYLEを作るためではなく、完成形への早すぎる収束を遅らせるための中間工程。"
+      }
+    ],
+    "explanation": [
+      {"term": "DE-FIDELITY PASS", "text": "完成UIの見た目を磨く前に、表現の忠実度を意図的に下げる工程。色、radius、shadow、Design Systemの細部より、位置・優先順位・関係・操作を考える。"},
+      {"term": "SKETCH ≠ FINAL STYLE", "text": "最終UIを手書き風にするTechniqueではない。スケッチは思考の媒体で、製品UIでは既存Design Systemやアクセシビリティへ戻す。"},
+      {"term": "SPACE + TIME", "text": "UIは静止画だけでなく状態変化を含む。SKETCHで空間関係を考え、INTERACTION PASSで時間・遷移を考えると、見た目だけの案になりにくい。"},
+      {"term": "DESIGN FIXATION", "text": "外部表現は発想を助ける一方、既存例や最初のスケッチへ固定されることもある。スケッチ自体を万能視せず、別表現や例を見ない再発想も併用する。"},
+      {"term": "研究上の境界", "text": "representationの種類がidea generationやfixationへ影響することには研究上の支持がある。一方、「手書きにすればAI臭さが消える」「必ずinteraction案が増える」ことが直接検証されたわけではない。"}
+    ],
+    "tips": [
+      "3案が同じレイアウトの微差ならやり直す。違いは色や角丸ではなく、情報構造や操作モデルに作る。",
+      "参考UIを見せる前に一度スケッチさせると、既存例へのfixationを減らせる場合がある。ただしスケッチ自体もfixation源になりうる。",
+      "単純なspacing修正や既存Design Systemへの厳密準拠だけが目的なら、この迂回工程は省いてよい。",
+      "「汚く描くこと」が目的ではない。詳細を保留し、構造とinteractionへ思考資源を使うことが目的。",
+      "最終評価は奇抜さではなく、直接生成版より情報階層・操作理解・distinctivenessが良くなったかで判断する。"
+    ],
+    "sources": [
+      {"label": "X — m11h: AI UI design × hand-drawn sketch idea", "url": "https://x.com/momotarabitch/status/2094962393025806638"},
+      {"label": "Design Studies — The effects of representation on idea generation and design fixation", "url": "https://www.sciencedirect.com/science/article/pii/S0142694X15000939"},
+      {"label": "Design Studies — The effects of physical prototyping and group work on the reduction of design fixation", "url": "https://www.sciencedirect.com/science/article/pii/S0142694X10000517"}
+    ],
+    "evidence": {
+      "level": "SUPPORTED",
+      "note": "表現形式がidea generationやdesign fixationへ影響すること、物理的プロトタイピングがfixation低減に寄与しうることには研究上の支持がある。一方、手書きスケッチを挟めばAI生成UIの既視感が必ず減る、interaction案が必ず増えるという直接検証ではないため、完成形への早期収束を遅らせる実践的プロセスとしてSUPPORTEDとする。"
+    }
+  },
+  {
+    "id": "build-material3-expressive-ui-with-m3e-canvas",
+    "number": "T-018",
+    "title": "M3E CanvasでUIを組み、AI用プロンプトに変換する",
+    "summary": "Material 3 ExpressiveのAndroid UIを言葉だけで指示せず、M3E Canvas上で画面・部品・遷移を視覚的に組み立てる。完成した構造を日本語／英語のAIコーディング用プロンプトへ変換し、そのまま実装指示に使う。",
+    "category": "Web・開発",
+    "tags": ["UI", "Material 3 Expressive", "M3E Canvas", "Android", "AI", "vibe coding", "プロンプト", "プロトタイプ", "画面遷移", "デザイン"],
+    "updated": "2026-09-03",
+    "quickAnswer": "Material 3 ExpressiveのAndroid UIをAIに作らせたいときは、M3E Canvas（https://lnkiai.github.io/m3e-canvas/）で画面を作る。部品をドラッグ＆ドロップし、必要なら複数画面を作ってタップ遷移をつなぐ。Previewで操作を確認し、Prompt出力から日本語または英語の指示文をコピーしてAIコーディングへ渡す。",
+    "steps": [
+      "M3E Canvasを開き、まず対象画面を作る。ボタン、FAB、チップ、App Bar、Navigation Bar、Search Bar、Card、List、Dialog、Text Fieldなど必要な部品を配置する。",
+      "色・形・レイアウトをMaterial 3 Expressiveの方向で調整する。見た目だけでなく、重要な操作が大きさ・色・shape・containmentで目立っているか確認する。",
+      "複数画面が必要ならscreenを追加し、タップ可能な部品へ遷移先とtransitionを設定する。Previewで実際にタップして、画面間のflowを確認する。",
+      "各部品に必要な振る舞いメモを入れ、Prompt出力を開く。デザイン全体または1画面だけを、日本語／英語の自然言語プロンプトへ変換する。",
+      "生成されたプロンプトをAIコーディングツールへ渡す。実装後はM3E CanvasのPreviewと比較し、構造・遷移・Material 3 Expressiveらしさが失われていないか確認する。"
+    ],
+    "commands": [
+      {"label": "M3E Canvas", "code": "https://lnkiai.github.io/m3e-canvas/", "note": "Material 3 Expressiveの画面をブラウザ上で組み、画面遷移を確認し、AIコーディング用プロンプトへ変換できる。"},
+      {"label": "GitHub", "code": "https://github.com/lnkiai/m3e-canvas", "note": "MITライセンスの公開リポジトリ。ツール仕様や更新内容を確認するときはこちら。"}
+    ],
+    "explanation": [
+      {"term": "VISUAL → PROMPT", "text": "「モダン」「もっとおしゃれ」など曖昧な形容詞だけでなく、画面上で実際に部品・位置・遷移を決め、その構造を文章へ変換してAIへ渡す。指示の曖昧さを減らしやすい。"},
+      {"term": "M3E CANVAS", "text": "Material 3 Expressiveのscreenをブラウザで組み、複数画面をリンクし、tap-through previewを行い、デザイン全体または単一画面を日本語／英語のAI coding promptとして出力できるオープンソースツール。"},
+      {"term": "MATERIAL 3 EXPRESSIVE", "text": "GoogleのMaterial 3拡張。色、shape、size、motion、typography、containmentなどを使って、機能を伝えながら感情的・個性的なUIを作る方向が公式に示されている。"},
+      {"term": "PROMPT IS NOT THE DESIGN", "text": "生成プロンプトは実装仕様の橋渡し。AIが出したコードを正解扱いせず、元のCanvas、実機操作、アクセシビリティ、Android実装要件と照合する。"},
+      {"term": "用途の境界", "text": "M3E CanvasはMaterial 3 Expressiveを中心としたツール。一般的なWeb UIやiOS UIを設計する万能ツールとして扱わない。"}
+    ],
+    "tips": [
+      "まず1画面を作ってから複数画面へ広げる。最初から全フローを作るより、主要操作の画面を固める方が速い。",
+      "部品には「見た目」だけでなく「押すと何が起きるか」のメモを入れる。Prompt出力に振る舞い情報も反映できる。",
+      "Material 3 Expressiveは「派手にする」ことではない。重要度をshape、color、size、motionで伝え、操作を分かりやすくする。",
+      "Androidの実装時は公式Material 3 / Composeの現行仕様を別途確認する。Canvasは実装ライブラリそのものではない。",
+      "ツールはブラウザのlocalStorageへ保存する構成。重要な設計はPromptやPNGも必要に応じて書き出しておく。"
+    ],
+    "sources": [
+      {"label": "X — いのり: M3E Canvas公開告知", "url": "https://x.com/lnkiai/status/2094708736841658753"},
+      {"label": "M3E Canvas — GitHub", "url": "https://github.com/lnkiai/m3e-canvas"},
+      {"label": "M3E Canvas — Live demo", "url": "https://lnkiai.github.io/m3e-canvas/"},
+      {"label": "Google Design — Better, Easier, Emotional UX: Material 3 Expressive research", "url": "https://design.google/library/expressive-material-design-google-research"},
+      {"label": "Android Developers — Material 3 Expressive overview", "url": "https://developer.android.com/design/ui/wear/guides/get-started"}
+    ],
+    "evidence": {
+      "level": "VERIFIED",
+      "note": "M3E Canvas公式リポジトリで、Material 3 Expressiveの部品配置、複数screen、tap navigation、Preview、日本語／英語のPrompt output、PNG export、localStorage保存が明記されている。Material 3 Expressive自体の設計原則もGoogle公式資料で確認できるため、ツールの具体的な使い方としてVERIFIEDとする。"
+    }
+  }
+]
