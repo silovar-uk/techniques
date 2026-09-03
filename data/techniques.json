@@ -2,65 +2,84 @@
   {
     "id": "sketch-ui-before-generating-final-design",
     "number": "T-017",
-    "title": "AIにUIを作らせる前に、一度ラフスケッチへ落とす",
-    "summary": "UI要件から完成画面へ直行せず、目的・情報階層を抽出したあと、手書き風の低忠実度スケッチを複数作る。完成度を一度下げることで、既知のカード／グリッドへ早く収束するのを防ぎ、構造やインタラクションを考え直す。",
+    "title": "AIにUIやKVを作らせる前に、一度ラフスケッチへ落とす",
+    "summary": "UIやWEB用KVを完成形へ直行させず、目的・情報階層・中心思想を抽出したあと、低忠実度スケッチを複数作る。UIでは構造と状態遷移、KVではメッセージ階層と大きな構図を先に比較し、既知のパターンや最初の案への早すぎる固定を防ぐ。",
     "category": "Web・開発",
     "tags": [
       "UI",
+      "KV",
+      "キービジュアル",
+      "Hero",
       "AI",
       "デザイン",
       "スケッチ",
       "手書き",
       "low-fidelity",
       "プロトタイピング",
+      "visual hierarchy",
       "design fixation",
       "interaction",
       "vibe coding"
     ],
     "updated": "2026-09-03",
-    "quickAnswer": "AIへいきなり「完成UIを作って」と頼まない。まず目的・最重要アクション・情報階層・状態遷移を抽出し、紙に描いたようなlow-fidelity sketchを最低3案作る。1案は標準、1案は情報構造を大胆に変える、1案はinteraction中心。矢印やbefore/afterで動きも描いて比較してから、初めてproduction UIへ戻す。",
+    "quickAnswer": "AIへいきなり完成デザインを頼まない。まず目的と優先順位を抽出し、紙に描いたようなlow-fidelity sketchを最低3案作る。UIなら情報構造・主要操作・状態遷移を比較し、KVならPRIMARY / SECONDARY / INFORMATION / OUTへ情報を分け、何を主役にするかが異なる3つの構図思想を16:9など実際の掲載比率で比較する。細部を描き込まず、比較・監査してからproductionへ戻す。",
     "steps": [
-      "元のUI要望から、目的・ユーザー・最重要アクション・情報の優先順位・状態・遷移を抜き出す。最初から「カード」「サイドバー」などのコンポーネント名へ寄せすぎない。",
-      "完成UIではなく、四角・線・矢印・短いメモだけのlow-fidelity sketchを最低3案作る。Aは普通に分かりやすい案、Bは情報構造を大胆に変える案、Cはinteraction中心の案にする。",
-      "静止画だけで終えず、主要操作ごとに BEFORE → TRIGGER → CHANGE → AFTER を描く。tap、expand、reveal、drag、scrollなど、状態変化を矢印や連続コマで表す。",
-      "3案を並べて「AIへ普通に作らせても出そうか」「最初の案へ固定されていないか」を監査する。必要ならスケッチを見ず、文章とユーザージャーニーだけから4案目を作る。",
-      "最後にスケッチから情報階層・空間関係・interactionだけを抽出し、既存Design System、アクセシビリティ、レスポンシブ、実装制約へ戻してproduction UIを作る。"
+      "元の依頼から、目的・ユーザー・最重要情報・優先順位を抜き出す。UIなら主要操作・状態・遷移まで、静的KVなら一瞬で伝えるPRIMARYと補助情報を整理する。最初から「カード」「人物中央」「写真全面」など既知の型へ寄せすぎない。",
+      "完成デザインではなく、四角・線・矢印・短いメモ・大きな文字だけのlow-fidelity sketchを最低3案作る。UIはA＝標準、B＝情報構造を大胆に変える、C＝interaction中心。KVはA＝理解優先、B＝メリット・特徴優先、C＝意味・感情・象徴優先など、そもそもの中心思想から分ける。",
+      "UIでは主要操作ごとに BEFORE → TRIGGER → CHANGE → AFTER を描き、tap、expand、reveal、drag、scrollなどの時間変化を表す。KVでは実際の掲載比率で、画面の重心・余白・文字とビジュアルの比率・巨大モチーフ・見る順番を比較する。",
+      "3案を並べて「AIへ普通に作らせても出そうか」「最初の案へ固定されていないか」「情報を全部載せようとしていないか」を監査する。必要なら既存ラフを見ず、文章化した要件だけから別案を作る。",
+      "最後にスケッチから採用すべき構造だけを抽出する。UIなら情報階層・空間関係・interactionをDesign System、アクセシビリティ、レスポンシブ、実装制約へ戻す。KVなら中心メッセージ・構図・素材占有率・余白・トーンをデザイナーへ渡し、そこで初めて完成表現へ進む。"
     ],
     "commands": [
       {
         "label": "SKETCH BEFORE UIプロンプト",
         "code": "まだ完成UIを作らないでください。まずこのUI要件から、目的・最重要アクション・情報階層・ユーザー行動・状態遷移を抽出してください。その後、紙とペンでラフに描いたようなlow-fidelity sketchとして、明確に異なる3案を作ってください。Aは標準、Bは情報構造を大胆に変える、Cはinteraction中心にしてください。カード、グリッド、Heroなど既知のUIパターンへ早く収束しないでください。主要操作は BEFORE → TRIGGER → CHANGE → AFTER の矢印や連続コマでも示してください。3案を比較・批判し、最初の案へのfixationも確認してから、初めてproduction UIへ戻してください。",
         "note": "HAND-DRAWN STYLEを作るためではなく、完成形への早すぎる収束を遅らせるための中間工程。"
+      },
+      {
+        "label": "SKETCH BEFORE WEB KVプロンプト",
+        "code": "あなたはアートディレクター兼ビジュアルコンセプト設計者です。与えられた案件情報から、完成デザインを制作する前段階として、デザイナーとの初回相談に使えるWEB用キービジュアルの構図ラフを作成してください。目的は見栄えの良い完成案ではなく、何を最も強く伝えるか、どの視覚アイデアを中心にするか、画面をどう構成するか、複数方向にどんな違いがあるかを比較できる状態にすることです。\n\n【INPUT】\n案件概要：{{案件概要}}\n掲載場所・用途：{{WEBサイト / LP / 特設ページ / SNSリンク先など}}\n伝えたいこと：{{訴求内容を箇条書き}}\n必須情報：{{日付 / 商品名 / 対戦カード / ブランド名など}}\n使用可能な素材：{{写真 / 商品 / キャラクター / ロゴ / モチーフなど}}\n避けたい表現：{{人物描写を避けたい / 高級感を損ないたくない等}}\nその他条件：{{任意}}\n\n【STEP 1｜最初にリサーチ】\nいきなり描かず、今回に近いWEB Hero / Campaign KV / Event Banner / 広告クリエイティブを簡潔にリサーチしてください。一瞬で認識できる情報量、視覚的ヒエラルキー、メインと補助情報の関係、縮小表示、余白、詰め込みすぎない方法、ジャンルでありがちな表現を確認し、今回の判断に使える原則を3〜5点に絞ってください。\n\n【STEP 2｜情報を編集】\nINPUTをそのまますべて載せず、PRIMARY＝見た瞬間に伝えること（原則1つ）、SECONDARY＝PRIMARYを補強すること（原則1〜2つ）、INFORMATION＝認識・行動に最低限必要な情報、OUT＝重要だがKVには載せない情報、に分類してください。依頼者が伝えたいこととKVに載せるべき情報を分けてください。\n\n【STEP 3｜中心思想を3つ】\nレイアウト違いから始めず、このKVは何を主役にするのかという仮説を3案作ってください。A＝王道・理解優先、B＝メリット・特徴優先、C＝意味・感情・象徴優先を基本とし、案件に合わなければより適切な3軸へ再定義してください。同じ構図の文字差し替えは禁止。何を最初に見せるか、画面の重心、余白、文字とビジュアルの比率、巨大モチーフ、情報の見る順番まで変えてください。\n\n【STEP 4｜実寸比率でlow-fidelity sketch】\n掲載場所に合う比率で、WEB KV領域だけをラフスケッチしてください。指定がなければ16:9を基本とします。ポスター、LP、企画書、絵コンテにはしません。矩形、円、直線、曲線、大きな文字、余白、単純な記号、色面指示、素材プレースホルダーを中心にしてください。写真は［MAIN PHOTO］、商品は［PRODUCT PHOTO］、人物は［PERSON / PHOTO］、キャラクターは［CHARACTER］のような箱で示し、顔・服装・表情・背景・商品の細部は描き込みません。重要なのは何をどこにどの大きさで置くかです。\n\n【STEP 5｜情報量を制限】\nメインコピー1、補助コピー0〜1、必須情報は必要最低限を原則とします。複数の訴求点をバッジ、吹き出し、カード、小アイコンで大量に並べないでください。複数情報を1つのコピーへ統合できないか、1つのビジュアルモチーフで複数の意味を持たせられないかを先に検討してください。\n\n【STEP 6｜既存パターンへの早すぎる収束を避ける】\n人物中央＋左右に文字、写真全面＋白文字、カード横並び、中央に商品＋周囲に特徴、バッジ大量配置などへ自動的に収束しないでください。ただし奇抜さ自体も目的にせず、理解速度と独自性を両方評価してください。\n\n【STEP 7｜比較・監査】\n3案を、3秒程度で意味を理解できるか、縮小しても成立するか、余白があるか、情報過多でないか、最重要情報が明確か、案件固有性があるか、ありがちな広告で終わっていないか、ブランドトーンに合うか、デザイナーが発展させる余地があるか、で比較してください。さらに最初のA案へのfixationでB・Cも似ていないか確認し、似ていれば作り直してください。制作後は別人格のクリエイティブディレクターとして、3案が実質同じ、文字量が多い、説明資料化している、具体物を描き込みすぎる、小要素が多い、主役不明、縮小で読めない、装飾でごまかす、INPUT外の情報追加、のいずれかがあれば却下・修正してください。\n\n【OUTPUT】\n1. リサーチから得た制作原則 3〜5点\n2. 情報整理 PRIMARY / SECONDARY / INFORMATION / OUT\n3. 3案の中心思想 各1文\n4. A案：コンセプト / ラフ / 意図3行以内\n5. B案：コンセプト / ラフ / 意図3行以内\n6. C案：コンセプト / ラフ / 意図3行以内\n7. 3案比較\n8. セルフ監査\n9. 次にデザイナーと決めること 最大5点\n\nここで終了してください。完成デザインには進まないでください。ゴールは、どのビジュアルコンセプト・構図思想を採用するかについてデザイナーと具体的に議論できる状態です。",
+        "note": "UI版のinteraction設計を、そのまま静的KVへ持ち込まない。KVでは最初に『何を一番伝えるか』を編集し、人物や具体物の描き込みよりメッセージ階層・重心・余白・素材占有率を比較する。"
       }
     ],
     "explanation": [
       {
         "term": "DE-FIDELITY PASS",
-        "text": "完成UIの見た目を磨く前に、表現の忠実度を意図的に下げる工程。色、radius、shadow、Design Systemの細部より、位置・優先順位・関係・操作を考える。"
+        "text": "完成デザインの見た目を磨く前に、表現の忠実度を意図的に下げる工程。色、radius、shadow、写真の細部より、位置・優先順位・関係・操作やメッセージの強弱を考える。"
       },
       {
         "term": "SKETCH ≠ FINAL STYLE",
-        "text": "最終UIを手書き風にするTechniqueではない。スケッチは思考の媒体で、製品UIでは既存Design Systemやアクセシビリティへ戻す。"
+        "text": "最終成果物を手書き風にするTechniqueではない。スケッチは思考の媒体で、UIなら既存Design Systemやアクセシビリティへ、KVならブランドガイド・写真・タイポグラフィ・完成アートディレクションへ戻す。"
       },
       {
-        "term": "SPACE + TIME",
-        "text": "UIは静止画だけでなく状態変化を含む。SKETCHで空間関係を考え、INTERACTION PASSで時間・遷移を考えると、見た目だけの案になりにくい。"
+        "term": "UI BRANCH = SPACE + TIME",
+        "text": "UIは静止画だけでなく状態変化を含む。SKETCHで空間関係を考え、INTERACTION PASSで時間・遷移まで考えると、見た目だけの案になりにくい。"
+      },
+      {
+        "term": "KV BRANCH = MESSAGE + SPACE",
+        "text": "静的KVではinteractionより、何を最初に認識させるかと、画面内の視覚的な重みが中心になる。まずPRIMARY / SECONDARY / INFORMATION / OUTへ情報を編集し、中心メッセージが異なる複数の構図思想を比較する。人物・写真・商品は細かく描かず、占有面積と位置をプレースホルダーで示す。"
+      },
+      {
+        "term": "VISUAL HIERARCHY",
+        "text": "2D画面の要素を、意図した重要度の順に視線が進むよう組織する考え方。色やコントラスト、サイズ、近接・グルーピングなどで重要度を作る。KVラフでは完成装飾より先に『何が最初に見えるか』を点検する。"
       },
       {
         "term": "DESIGN FIXATION",
-        "text": "外部表現は発想を助ける一方、既存例や最初のスケッチへ固定されることもある。スケッチ自体を万能視せず、別表現や例を見ない再発想も併用する。"
+        "text": "外部表現は発想を助ける一方、既存例や最初のスケッチへ固定されることもある。スケッチ自体を万能視せず、案ごとに中心思想を変える、既存ラフを見ず文章要件から再発想するなど、別表現も併用する。"
       },
       {
         "term": "研究上の境界",
-        "text": "representationの種類がidea generationやfixationへ影響することには研究上の支持がある。一方、「手書きにすればAI臭さが消える」「必ずinteraction案が増える」ことが直接検証されたわけではない。"
+        "text": "representationの種類がidea generationやfixationへ影響することには研究上の支持がある。またHeroや2D画面では、中心メッセージと視覚階層を明確にする実務上の原則が広く示されている。一方、この3案フレームやPRIMARY / SECONDARY / INFORMATION / OUTの分類自体が最適と直接検証されたわけではない。"
       }
     ],
     "tips": [
-      "3案が同じレイアウトの微差ならやり直す。違いは色や角丸ではなく、情報構造や操作モデルに作る。",
-      "参考UIを見せる前に一度スケッチさせると、既存例へのfixationを減らせる場合がある。ただしスケッチ自体もfixation源になりうる。",
-      "単純なspacing修正や既存Design Systemへの厳密準拠だけが目的なら、この迂回工程は省いてよい。",
-      "「汚く描くこと」が目的ではない。詳細を保留し、構造とinteractionへ思考資源を使うことが目的。",
-      "最終評価は奇抜さではなく、直接生成版より情報階層・操作理解・distinctivenessが良くなったかで判断する。"
+      "3案が同じレイアウトの微差ならやり直す。違いは色や角丸ではなく、UIなら情報構造・操作モデル、KVなら最初に伝える意味・画面の重心・素材占有率に作る。",
+      "参考UIや参考KVを見ることは刺激にもfixation源にもなる。大量の似た事例を先に見せるより、まず要件を文章化し、リサーチから得た原則と事例そのものを分けて扱う。",
+      "KVでは『伝えたいこと』を全部載せない。Heroは一番伝えたい情報を強く伝える容器として考え、詳細は本文・LP側へ回す。",
+      "人物・商品・キャラクターの描画が目的でないラフでは、プレースホルダーを使う。デザイナーが素材選定やアートディレクションを発展させる余白を残す。",
+      "単純なspacing修正や既存Design Systemへの厳密準拠だけが目的なら、この迂回工程は省いてよい。KVでも既にコンセプト・情報階層・構図が完全に決まっている場合は、無理に3案を作らない。",
+      "『汚く描くこと』が目的ではない。詳細を保留し、構造・interaction・メッセージ階層へ思考資源を使うことが目的。",
+      "最終評価は奇抜さではなく、直接生成版より情報階層・操作理解・message clarity・distinctivenessが良くなったかで判断する。"
     ],
     "sources": [
       {
@@ -74,11 +93,19 @@
       {
         "label": "Design Studies — The effects of physical prototyping and group work on the reduction of design fixation",
         "url": "https://www.sciencedirect.com/science/article/pii/S0142694X10000517"
+      },
+      {
+        "label": "Nielsen Norman Group — Visual Hierarchy in UX: Definition",
+        "url": "https://www.nngroup.com/articles/visual-hierarchy-ux-definition/"
+      },
+      {
+        "label": "Smashing Magazine — When Large Isn’t Large Enough: Designing With Hero Images",
+        "url": "https://www.smashingmagazine.com/2017/06/designing-hero-images/"
       }
     ],
     "evidence": {
       "level": "SUPPORTED",
-      "note": "表現形式がidea generationやdesign fixationへ影響すること、物理的プロトタイピングがfixation低減に寄与しうることには研究上の支持がある。一方、手書きスケッチを挟めばAI生成UIの既視感が必ず減る、interaction案が必ず増えるという直接検証ではないため、完成形への早期収束を遅らせる実践的プロセスとしてSUPPORTEDとする。"
+      "note": "表現形式がidea generationやdesign fixationへ影響することには研究上の支持があり、WEBのHeroや2D画面では中心メッセージ・視覚階層を明確にする実務原則も確認できる。一方、low-fidelity sketchを挟めばAI生成デザインの既視感が必ず減る、3案フレームや情報分類が常に最適という直接検証ではないため、完成形への早期収束を遅らせる実践的プロセスとしてSUPPORTEDとする。"
     }
   },
   {
@@ -528,7 +555,7 @@
       "よく使う長い指示文のうち、毎回ほぼ同じ内容を使うものを選ぶ。",
       "覚えやすく、普通の文章では誤入力しにくい短い日本語トリガーを決める。",
       "日本語入力のユーザー辞書やテキスト展開機能など、自分の入力環境にトリガーと展開文を登録する。",
-      "用途の違う定型文には別のトリガーを割り当てる。「ぷろせけ」はプロンプトそのものを改善したいとき、「めたぷろ」は次の実行指示を構造化したいときに使う。",
+      "用途の違う定型文には別のトリガーを割り当てる。「ぷろせけ」はプロンプトそのものを改善したいとき、「めたぷろ」は次に使う実行プロンプトの生成というように、役割を分けると呼び出し時に迷いにくい。",
       "定型文を更新したら、展開側も修正して、古い指示が残らないようにする。"
     ],
     "commands": [
@@ -1015,37 +1042,37 @@
       },
       {
         "label": "JavaScriptで文章を渡す",
-        "code": "const prompt = `以下のデータを整理して。\\n\\n${text}`;\nconst url = `https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`;\nwindow.open(url, \"_blank\", \"noopener,noreferrer\");",
+        "code": "const prompt = `以下のデータを整理して。\n\n${text}`;\nconst url = `https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`;\nwindow.open(url, \"_blank\", \"noopener,noreferrer\");",
         "note": "ボタンを押した時に、ページ上の文章をそのままChatGPTへ持っていく基本形。"
       },
       {
         "label": "JSONデータを渡す",
-        "code": "const prompt = `以下のJSONを分析して。\\n\\n${JSON.stringify(data, null, 2)}`;\nwindow.open(`https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
+        "code": "const prompt = `以下のJSONを分析して。\n\n${JSON.stringify(data, null, 2)}`;\nwindow.open(`https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
         "note": "一覧や記録データから「AIに聞く」導線を作る時に使える。"
       },
       {
         "label": "ChatGPT版（URLへ埋め込む）",
-        "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nwindow.open(`https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
+        "code": "const prompt = `以下を整理して。\n\n${text}`;\nwindow.open(`https://chatgpt.com/?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
         "note": "`?prompt=` は便利だが、OpenAIの公開Helpで正式な外部連携仕様として案内されているものではない。仕様変更に備える。"
       },
       {
         "label": "Gemini版（コピーして開く）",
-        "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nawait navigator.clipboard.writeText(prompt);\nwindow.open(\"https://gemini.google.com/app\", \"_blank\", \"noopener,noreferrer\");",
+        "code": "const prompt = `以下を整理して。\n\n${text}`;\nawait navigator.clipboard.writeText(prompt);\nwindow.open(\"https://gemini.google.com/app\", \"_blank\", \"noopener,noreferrer\");",
         "note": "GeminiのWeb版も、外部サイトからプロンプト本文をURLへ埋め込む正式仕様は確認できない。コピー方式ならUI変更の影響を受けにくい。"
       },
       {
         "label": "Perplexity版（URLへ渡す・非公式扱い）",
-        "code": "const prompt = `以下を調べて。\\n\\n${text}`;\nwindow.open(`https://www.perplexity.ai/search?q=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
+        "code": "const prompt = `以下を調べて。\n\n${text}`;\nwindow.open(`https://www.perplexity.ai/search?q=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
         "note": "Perplexityは質問文をそのまま検索・プロンプトとして扱えるが、`/search?q=` をWeb連携用の正式仕様として保証する公式ドキュメントは確認できない。動かなければコピー方式へ。"
       },
       {
         "label": "Claude版（公式Deep Link / Desktop）",
-        "code": "const prompt = `以下を整理して。\\n\\n${text}`;\nwindow.location.href = `claude://claude.ai/new?q=${encodeURIComponent(prompt)}`;",
+        "code": "const prompt = `以下を整理して。\n\n${text}`;\nwindow.location.href = `claude://claude.ai/new?q=${encodeURIComponent(prompt)}`;",
         "note": "Anthropic公式のClaude Desktop Deep Link。新しいチャットを開き、入力欄へプロンプトを事前入力する。自動送信ではなく、ユーザーが確認して送信する。"
       },
       {
         "label": "Claude Code版（公式Web URL）",
-        "code": "const prompt = `このリポジトリの課題を整理して。\\n\\n${text}`;\nwindow.open(`https://claude.ai/code?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
+        "code": "const prompt = `このリポジトリの課題を整理して。\n\n${text}`;\nwindow.open(`https://claude.ai/code?prompt=${encodeURIComponent(prompt)}`, \"_blank\", \"noopener,noreferrer\");",
         "note": "Claude Codeの公式Web導線。必要に応じて `repositories=owner/repo` などのパラメータも追加できる。"
       },
       {
