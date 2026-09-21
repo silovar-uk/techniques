@@ -14,7 +14,10 @@
       "information scent",
       "progressive disclosure",
       "キーワード",
-      "情報整理"
+      "情報整理",
+      "Scan Pairs",
+      "Anchor",
+      "Signal"
     ],
     "updated": "2026-09-22",
     "quickAnswer": "大量情報を最初から全部読まない。各項目を原則「対象＋変化」の2語へ圧縮して一覧し、気になったものだけ1行要約→本文へ進む。2語で内容を完全理解させるのではなく、「何の話か」「何が起きたか」を一瞬で判別し、読む対象を選べることを優先する。",
@@ -30,12 +33,21 @@
         "label": "2語圧縮プロンプト",
         "code": "与えられた情報群を、一覧して「どれを詳しく読むか」を判断するための2語圧縮に変換してください。目的は要約ではなく、一覧性の最大化です。各項目は原則「対象＋変化」の2つの意味単位にしてください。必ず原文を確認し、先頭2語を抜くだけにしないでください。固有名詞、対象、出来事、変化の方向を優先し、上昇／低下、開始／終了、可決／否決などを潰さないでください。感想・煽り・評価語は足さず、同じ一覧内の他項目と区別できる語を選んでください。各項目について「何の話か」「何が起きたか」「他の記事と取り違えないか」を監査し、曖昧なら選び直してください。元の順番を維持し、1項目1行、2語圧縮だけを出力してください。",
         "note": "新聞見出し、ニュース一覧、メール、議事録、タスクなどを『読む前に眺める』ためのSCAN LAYERを作る。"
+      },
+      {
+        "label": "Scan Pairs（Anchor + Signal）",
+        "code": "Convert the given information into Scan Pairs for rapid scanning and article selection, not full understanding: for each item, read the original first and output exactly one line in the original order using “Anchor + Signal,” where Anchor is the shortest word or compact phrase that uniquely identifies what the item is about and Signal is the shortest word or compact phrase that captures what changed, happened, or became newsworthy; prioritize proper nouns, subjects, events, and directional changes such as rise/fall, start/end, approval/rejection, win/defeat, record-high/record-low, preserve distinctions between nearby items, prefer consistent Signal vocabulary over stylistic variety, omit articles, filler, commentary, evaluation, explanation, and unnecessary grammar, do not merely copy the first two words of the source, allow two semantic units rather than forcing exactly two lexical words when clarity requires it, and internally audit every pair by asking: “Can I identify the topic?”, “Can I identify what happened?”, “Can I distinguish it from nearby items?”, and “Can I scan it without mentally reconstructing a sentence?”; if any answer is no, revise the pair, then output only the Scan Pairs with no summaries, reasons, headings, or extra text.",
+        "note": "2語を「Anchor＝何の話か」と「Signal＝何が起きたか」に分け、語数ではなく2つの意味単位として安定させる英語版プロンプト。大量の記事一覧を高速スキャンするとき向け。"
       }
     ],
     "explanation": [
       {
         "term": "SCAN LAYER",
         "text": "本文とユーザーの間に置く、一覧用の超圧縮レイヤー。目的は理解の完了ではなく、読む対象の選別。2語 → 1行 → 詳細という段階的な情報開示にする。"
+      },
+      {
+        "term": "SCAN PAIRS",
+        "text": "2語圧縮を「Anchor + Signal」として明示した型。Anchorは項目を一意に識別する対象、Signalは変化・出来事・ニュース性。厳密な2単語ではなく、一覧性を保つ2つの意味単位として扱う。"
       },
       {
         "term": "対象＋変化",
@@ -59,7 +71,8 @@
       "「政府　対応」「企業　発表」のように何が起きたか分からない抽象語は避ける。方向や具体的な変化を残す。",
       "厳密に2単語である必要はなく、固有名詞や複合語は1つの意味単位として扱う。重要なのは2つの情報チャンクに制限すること。",
       "同じ語が大量に並ぶ場合は、一覧内での識別性を優先して対象語を具体化する。",
-      "2語だけで判断できない重要記事は無理に意味を削らず、気になる状態を作って次の層へ送る。"
+      "2語だけで判断できない重要記事は無理に意味を削らず、気になる状態を作って次の層へ送る。",
+      "大量記事ではSignal語彙を「増加／減少」「開始／終了」「可決／否決」などへできるだけ統一すると、表現の面白さより比較・一覧性が上がる。"
     ],
     "sources": [
       {
