@@ -1,5 +1,100 @@
 [
   {
+    "id": "walk-faster-with-heel-recovery-cue",
+    "number": "T-020",
+    "title": "踵の裏を見せるイメージで、歩行の回転を上げる",
+    "summary": "速く歩きたいとき、歩幅を無理に伸ばすより、後ろ脚のpush-offから回収までを軽く早めるイメージを使う。「踵の裏を見せる」は、その動きを引き出すための比喩キューとして試す。文字どおり足首の角度を作るのではなく、歩行のテンポが自然に上がるかで判断する。",
+    "category": "健康・身体",
+    "tags": [
+      "歩行",
+      "速歩",
+      "歩行速度",
+      "cadence",
+      "歩幅",
+      "push-off",
+      "踵",
+      "heel recovery",
+      "足関節",
+      "motor cue",
+      "守破離"
+    ],
+    "updated": "2026-09-23",
+    "quickAnswer": "速くなる可能性はある。ただし「踵の裏を前へ向ける」動作そのものが証明されているわけではない。効くとすれば、後ろ脚のpush-offと脚の回収が早まり、cadenceが自然に上がるためと考えるのが妥当。足首を細かく操作せず、「靴底が一瞬見えるくらい、後ろ脚を軽く回収する」程度のイメージで試す。",
+    "steps": [
+      "【守】まず普通に歩き、歩幅を無理に伸ばさず、少しだけ歩数を上げる。速さは主にcadenceとstep lengthの組み合わせで決まる。",
+      "【守】前脚を遠くへ投げ出すのではなく、足が体の前へ自然に着く範囲を保つ。大股で速くしようとしない。",
+      "【破】後ろ足が離れる瞬間に「踵の裏／靴底が一瞬見える」くらい、後ろ脚が軽く畳まれて前へ回収されるイメージを置く。文字どおり足首を極端に曲げない。",
+      "【破】30〜60秒だけ試し、歩数、体感速度、ふくらはぎの力み、足音を観察する。速くなっても力みが増えるならキューを弱める。",
+      "【離】慣れたら踵を意識し続けない。「後ろの地面を軽く送る」「足が勝手に前へ戻る」など、自分が最も自然にテンポを上げられる短い比喩へ置き換える。"
+    ],
+    "commands": [
+      {
+        "label": "歩行キュー検証プロンプト",
+        "code": "私は速く歩くための身体キューを試しています。候補は「かかとの裏を見せるような気持ちで歩く」です。この言葉を文字どおりの関節操作として扱わず、①どの歩行メカニズムに働きそうか、②速さに効く可能性、③力み・大股・過剰な蹴りなどの副作用、④もっと外的で自動性を邪魔しにくい言い換え、⑤30〜60秒で比較できる簡単なセルフテスト、の順で評価してください。結論は、直接エビデンスがあること／関連研究から推測できること／個人差が大きいことを分けてください。",
+        "note": "身体感覚の言葉を、そのまま正解扱いせず、Mechanism → Risk → Better cue → Testへ分解する。"
+      }
+    ],
+    "explanation": [
+      {
+        "term": "速度 = 歩幅 × ピッチ",
+        "text": "歩行速度は大きく、1歩の長さと単位時間あたりの歩数で決まる。速歩では両方が増えることが多いが、歩幅を無理に伸ばす必要はない。"
+      },
+      {
+        "term": "PUSH-OFF",
+        "text": "立脚後期の足関節底屈筋群は正のパワーを生み、身体重心の加速と後ろ脚を遊脚へ移す加速の両方に寄与する。"
+      },
+      {
+        "term": "HEEL RECOVERY",
+        "text": "ここでの「踵の裏を見せる」は正式な歩行用語ではなく、後ろ脚を離地後に素早く回収する感覚を表す比喩。足裏の向きを厳密に作ることが目的ではない。"
+      },
+      {
+        "term": "CADENCE FIRST",
+        "text": "健康成人の研究では、速く歩く際にcadence中心で速度を上げた群は、stride lengthを増やした群より下肢関節モーメントの増加が小さかった。大股よりテンポを先に試す理由になる。"
+      },
+      {
+        "term": "INTERNAL FOCUSの罠",
+        "text": "歩行のような自動化された運動では、脚や関節を細かく意識するinternal focusがパフォーマンスを乱す場合がある。キューは短く、結果イメージ寄りにして、慣れたら意識から外す。"
+      },
+      {
+        "term": "守破離",
+        "text": "守ではcadence・step lengthという基本を守る。破で「踵の裏」という比喩を試す。離ではその言葉自体を捨て、自分の歩行が自然に速くなる最小キューへ昇華する。"
+      }
+    ],
+    "tips": [
+      "「速く歩く＝大股」は固定しない。歩幅を無理に広げると、関節負荷やブレーキ感が増えることがある。",
+      "踵を高く蹴り上げること自体が目的ではない。ふくらはぎやハムストリングが強く力むならやりすぎ。",
+      "足音が急に大きくなる、前につんのめる、つま先が引っかかるなら、そのキューは一度外す。",
+      "比較するなら同じ平坦路で30〜60秒ずつ、通常歩行／少しピッチ増／踵キューを試し、歩数・時間・主観的な楽さを見る。",
+      "アキレス腱・足底・膝などに痛みが出る場合は速度実験を中止し、痛みを押してフォーム調整しない。"
+    ],
+    "sources": [
+      {
+        "label": "PubMed — Effects of walking speed on gait biomechanics: systematic review and meta-analysis",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/31248456/"
+      },
+      {
+        "label": "PubMed — From normal to fast walking: cadence and stride length strategies",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/27131188/"
+      },
+      {
+        "label": "PMC — A unified perspective on ankle push-off in human walking",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5201006/"
+      },
+      {
+        "label": "PubMed — Training Propulsion via Acceleration of the Trailing Limb",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/33074799/"
+      },
+      {
+        "label": "PubMed — The Effects of Different Attentional Focus During Walking on Prefrontal Cortical Activation in Young Healthy Adults",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42264551/"
+      }
+    ],
+    "evidence": {
+      "level": "SUPPORTED",
+      "note": "速歩でcadence・step length・足関節運動が変化すること、ankle push-offが前進とleg swing開始に寄与すること、trailing-limb propulsionの訓練で歩行速度が変化しうることには研究上の支持がある。一方、「踵の裏を見せる」という特定の言語キューそのものを健康成人で検証した直接研究は確認できないため、Mechanismに根拠のある実践的キューとしてSUPPORTEDとする。"
+    }
+  },
+  {
     "id": "compress-list-items-to-two-word-index",
     "title": "大量情報は、まず2語に圧縮して一覧する",
     "summary": "新聞・ニュース・メール・議事録など大量の項目は、各項目を「対象＋変化」など2つの意味単位へ圧縮して先に一覧する。目的は完全に要約することではなく、何を詳しく読むかを高速に選ぶためのSCAN LAYERを作ること。",
