@@ -1,5 +1,105 @@
 [
   {
+    "id": "use-gemini-transcribe-for-speech-to-text",
+    "number": "T-021",
+    "title": "Geminiで文字起こしするときは、Transcribe系モデルを選ぶ",
+    "summary": "録音済み音声の文字起こしは gemini-3.5-transcribe、リアルタイム字幕は gemini-3.5-transcribe-live、音声を聞かせて要約・分析までしたい場合は gemini-3.8-flash などの通常マルチモーダルモデル、と目的で分ける。Google AI Studio Build modeのマイク入力は、録音ファイル文字起こしとは別物として考える。",
+    "category": "Web・開発",
+    "tags": [
+      "Gemini",
+      "Google AI Studio",
+      "文字起こし",
+      "Transcribe",
+      "Speech-to-Text",
+      "音声",
+      "gemini-3.5-transcribe",
+      "gemini-3.5-transcribe-live",
+      "gemini-3.8-flash",
+      "Build mode"
+    ],
+    "updated": "2026-10-05",
+    "quickAnswer": "録音済みのMP3 / M4A / WAVなどを文字起こしするなら `gemini-3.5-transcribe`。マイクやライブ音声を低遅延で文字起こしするなら `gemini-3.5-transcribe-live`。音声の内容を要約・分析・質問応答したいなら `gemini-3.8-flash` などのAudio understanding対応モデルを使う。AI Studio Build modeの🎤はBuildへの指示を音声入力するボタンなので、録音ファイル文字起こしとは分けて考える。",
+    "steps": [
+      "まず目的を3つに分ける。①録音済みファイルを正確に文字起こし、②リアルタイム音声を字幕化、③音声を聞かせて要約・分析。",
+      "①なら `gemini-3.5-transcribe` を使う。音声入力は最大1時間。話者分離や単語タイムスタンプを有効にした場合は最大30分。MP3、M4A、WAV、FLAC、WebMなどをサポートする。",
+      "②なら `gemini-3.5-transcribe-live` をLive APIで使う。WebSocketまたはGoogle Gen AI SDKで継続音声を送り、増分の文字起こしを受け取る。",
+      "③なら `gemini-3.8-flash` などAudio understanding対応モデルへ音声を渡し、「文字起こし＋要約」「決定事項を抽出」「この発言を分析」などを依頼する。",
+      "Google AI Studio Build modeのマイクは、Build用プロンプトを音声入力する機能。録音済み会議ファイルを文字起こししたい場合は、Build modeで `gemini-3.5-transcribe` を呼ぶアプリを作るか、Gemini APIから直接使う。",
+      "エラーで `Model does not support audio input` などが出たら、現在選択中モデルと用途を照合し、音声入力対応モデルへ切り替える。"
+    ],
+    "commands": [
+      {
+        "label": "AI Studio Build modeで文字起こしアプリを作るプロンプト",
+        "code": "録音済みの音声ファイルをアップロードして全文文字起こしできるシンプルなWebアプリを作ってください。文字起こしには Gemini API の `gemini-3.5-transcribe` を使用し、Files APIで音声ファイルをアップロードしてURIを渡してください。MP3 / M4A / WAVを受け付け、結果全文をコピーできるようにしてください。追加オプションとして、verbatim / smart transcription を切り替えられるようにしてください。話者分離と単語タイムスタンプはverbatim時のみ選択可能にし、smart transcriptionと同時に有効化しないでください。APIキーはクライアントへ露出せず、AI Studio Build modeのserver-side secretを使ってください。",
+        "note": "Build modeの🎤へ録音を渡すのではなく、Transcribe APIを呼ぶ小さなアプリを作るための指示。"
+      },
+      {
+        "label": "音声の文字起こし＋分析プロンプト",
+        "code": "この音声をまず可能な限り正確に文字起こしし、その後に①3行要約、②重要な決定事項、③ToDo、④固有名詞・専門用語、⑤不確実な聞き取り箇所を分けて出力してください。文字起こし部分と分析部分を混ぜないでください。",
+        "note": "これは専用Transcribeモデルではなく、Audio understanding対応モデルで文字起こし後の理解・整理まで行いたい場合向け。"
+      }
+    ],
+    "explanation": [
+      {
+        "term": "GEMINI 3.5 TRANSCRIBE",
+        "text": "音声→テキストに最適化された専用モデル。自動言語検出、speaker diarization、word-level timestamps、custom vocabulary、smart transcriptionに対応する。"
+      },
+      {
+        "term": "TRANSCRIBE LIVE",
+        "text": "`gemini-3.5-transcribe-live` はLive API用の低遅延Speech-to-Textモデル。マイクなどから継続音声をストリーミングし、リアルタイムで増分文字起こしを受け取る。"
+      },
+      {
+        "term": "VERBATIM / SMART",
+        "text": "verbatimはフィラー、言い直し、繰り返しを含む生の発話を残す。smartはフィラー除去、自己修正の解決、段落・箇条書き化、文法整理など読みやすさを優先する。"
+      },
+      {
+        "term": "DIARIZATION / TIMESTAMPS",
+        "text": "録音済みTranscribeでは話者分離と単語レベルタイムスタンプを利用できる。ただしcustom vocabularyとの同時利用には制約があり、smart transcriptionとも併用できない機能がある。"
+      },
+      {
+        "term": "AUDIO UNDERSTANDING",
+        "text": "音声を単に文字へ変えるだけでなく、要約・質問応答・分析をしたい場合は通常のマルチモーダルモデルを使う。Google公式のAudio understanding例では `gemini-3.8-flash` が使われている。"
+      },
+      {
+        "term": "BUILD MODEの🎤",
+        "text": "AI Studio Build modeの公式ドキュメントでは、入力欄のspeech-to-textボタンは『何を作るか』を音声で指示する用途として説明されている。録音済みファイルをTranscribeモデルへ渡す処理とは別の機能。"
+      }
+    ],
+    "tips": [
+      "会議をそのまま保存したいならverbatim、読み返しやすい議事録の土台が欲しいならsmartをまず試す。",
+      "社名・人名・製品名など聞き間違えやすい語がある場合はcustom vocabularyが使える。ただしdiarization / word timestampsとの併用制約を確認する。",
+      "話者分離や単語タイムスタンプを有効にすると、録音済みファイルの上限は1時間ではなく30分になる。",
+      "長い録音はFiles APIでアップロードしてURIを渡す。通常のAudio understandingでは小さい音声をinlineで渡す方法もある。",
+      "AI Studioのモデル選択画面で音声非対応モデルを選んでいる場合、音声ファイルを渡しても解決しない。まず『文字起こし』『Live』『分析』のどれかを決めてからモデルを選ぶ。"
+    ],
+    "sources": [
+      {
+        "label": "Google AI for Developers — Audio transcription",
+        "url": "https://ai.google.dev/gemini-api/docs/transcribe"
+      },
+      {
+        "label": "Google AI for Developers — Gemini 3.5 Transcribe model",
+        "url": "https://ai.google.dev/gemini-api/docs/models/gemini-3.5-transcribe?hl=ja"
+      },
+      {
+        "label": "Google AI for Developers — Live transcription",
+        "url": "https://ai.google.dev/gemini-api/docs/live-api/live-transcribe?hl=ja"
+      },
+      {
+        "label": "Google AI for Developers — Audio understanding",
+        "url": "https://ai.google.dev/gemini-api/docs/audio"
+      },
+      {
+        "label": "Google AI for Developers — Build apps in Google AI Studio",
+        "url": "https://ai.google.dev/gemini-api/docs/aistudio-build-mode"
+      }
+    ],
+    "evidence": {
+      "level": "VERIFIED",
+      "note": "Google公式ドキュメントで `gemini-3.5-transcribe` と `gemini-3.5-transcribe-live`、各機能・上限、`gemini-3.8-flash` を使ったAudio understanding、AI Studio Build modeのspeech-to-textボタンの用途を確認した。Build modeのマイクは録音ファイル文字起こしそのものではないため、用途を明確に分けて記載する。"
+    }
+  },
+  {
     "id": "walk-faster-with-heel-recovery-cue",
     "number": "T-020",
     "title": "踵の裏を見せるイメージで、歩行の回転を上げる",
