@@ -47,6 +47,6 @@ for(const recipe of t.RECIPES){
 }
 env.location.hash='#/prompt-transforms/shortcuts';
 assert.equal(t.currentPath(),'','List route');
-env.location.hash='#/prompt-transforms/shortcuts/%E3%81%9B%E3%81%84';
+env.location.hash='#/prompt-transforms/shortcuts/'+encodeURIComponent('せいぷろ');
 assert.equal(t.currentPath(),'せいぷろ','Detail route');
 console.log('✓ Shortcut UI smoke tests: search, classification, composition, warning, recipe, routes');
