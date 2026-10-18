@@ -18,8 +18,8 @@ assert.ok(t,'Shortcut testing hooks failed');
 t.state.items=data;
 assert.equal(data.length,56,'Expected 56 personal shortcuts');
 assert.equal(new Set(data.map(item=>item.key)).size,data.length,'Duplicate aliases');
-assert.deepEqual([...t.aliases('りさりさ＋せい')],['りさりさ','せい'],'Japanese plus separator');
-assert.deepEqual([...t.aliases('りさりさ せい')],['りさりさ','せい'],'Space separator');
+assert.deepEqual([...t.aliases('りさりさ＋せい')],['りさりさ','せいぷろ'],'Japanese plus separator');
+assert.deepEqual([...t.aliases('りさりさ せい')],['りさりさ','せいぷろ'],'Space separator');
 
 for(const key of ['しゅはれ','ぜろべす','すきゃぺあ','ぽとふぉり']){
   const hit=data.find(item=>item.key===key);
@@ -34,10 +34,10 @@ assert.ok(t.results().every(x=>x.intent==='作る'&&x.role==='主指示'),'Filte
 t.state.intent='すべて';t.state.role='すべて';
 t.state.selected=['りさりさ'];
 assert.equal(t.combined(),data.find(x=>x.key==='りさりさ').content,'Single alias must be byte-faithful');
-t.state.selected=['りさりさ','せい'];
+t.state.selected=['りさりさ','せいぷろ'];
 const multi=t.combined();
-assert.ok(multi.includes('【りさりさ｜')&&multi.includes('【せい｜'),'Composition labels missing');
-assert.ok(multi.indexOf('【りさりさ｜')<multi.indexOf('【せい｜'),'Composition should preserve ordering');
+assert.ok(multi.includes('【りさりさ｜')&&multi.includes('【せいぷろ｜'),'Composition labels missing');
+assert.ok(multi.indexOf('【りさりさ｜')<multi.indexOf('【せいぷろ｜'),'Composition should preserve ordering');
 t.state.selected=['ぜんぞ','みつもん'];
 assert.ok(t.warnings().some(x=>x.includes('質問数')),'Conflict warning missing');
 t.state.selected=['さごあつ','すきゃぺあ'];
@@ -48,5 +48,5 @@ for(const recipe of t.RECIPES){
 env.location.hash='#/prompt-transforms/shortcuts';
 assert.equal(t.currentPath(),'','List route');
 env.location.hash='#/prompt-transforms/shortcuts/%E3%81%9B%E3%81%84';
-assert.equal(t.currentPath(),'せい','Detail route');
+assert.equal(t.currentPath(),'せいぷろ','Detail route');
 console.log('✓ Shortcut UI smoke tests: search, classification, composition, warning, recipe, routes');
