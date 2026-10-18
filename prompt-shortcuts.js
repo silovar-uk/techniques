@@ -15,7 +15,7 @@
   const normalize = value => String(value ?? '').normalize('NFKC').toLowerCase();
   const $ = selector => document.querySelector(selector);
   const byKey = key => state.items.find(item => item.key === key);
-  const currentPath = () => decodeURIComponent(location.hash.replace(/^#\/?/, '').split('/').slice(2).join('/'));
+  const currentPath = () => decodeURIComponent(location.hash.replace(/^#\/?/, '').split('/').slice(2).join('/')) .replace(/^shortcuts(?:\/|$)/, '');
   const detailUrl = key => ROOT + '/' + encodeURIComponent(key);
   const isActive = () => location.hash.replace(/^#\/?/, '').startsWith('prompt-transforms/shortcuts');
   const terms = query => normalize(query.trim()).split(/\s+/).filter(Boolean);
