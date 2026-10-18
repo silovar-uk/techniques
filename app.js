@@ -290,6 +290,8 @@ function updateLibrary() {
   const isFiltered = Boolean(searchQuery.trim()) || activeCategory !== 'すべて';
   const shelf = document.querySelector('#fieldShelf');
   if (shelf) shelf.hidden = isFiltered;
+  const featured = document.querySelector('#promptFeature');
+  if (featured) featured.hidden = isFiltered;
   const title = document.querySelector('#libraryTitle');
   const count = document.querySelector('#libraryCount');
   if (title) title.textContent = isFiltered ? '条件に合うTechnique' : '最近のTechnique';
@@ -386,6 +388,16 @@ function renderHome() {
         <span id="searchReadout" class="search-readout" aria-hidden="true">${escapeHtml(getSearchReadout(items))}</span>
         <kbd>/</kbd>
       </div>
+    </section>
+    <section id="promptFeature" class="pt-feature" aria-label="プロンプト変換の特設コーナー" ${isFiltered ? 'hidden' : ''}>
+      <a href="#/prompt-transforms">
+        <div>
+          <small>SPECIAL TOOL / PROMPT TRANSFORM</small>
+          <strong>プロンプト変換 — 18の改善パターン</strong>
+          <p>「詳しく調べて」を、使える調査指示へ。検索・比較・差し替え・コピー。</p>
+        </div>
+        <span class="pt-feature-arrow" aria-hidden="true">↗</span>
+      </a>
     </section>
     ${renderFieldShelf()}
     <section class="library-tools" aria-label="Techniquesを絞り込む">
@@ -576,6 +588,10 @@ function route() {
     renderHome();
     return;
   }
+  if (path === 'prompt-transforms' || path.startsWith('prompt-transforms/')) {
+    window.PromptTransforms?.render(path.split('/')[1] || '');
+    return;
+  }
   const item = techniques.find(entry => entry.id === path);
   item ? renderArticle(item) : renderNotFound();
 }
@@ -705,6 +721,7 @@ window.addEventListener('popstate', scheduleHistoryRoute);
 window.addEventListener('hashchange', scheduleHistoryRoute);
 window.addEventListener('keydown', event => {
   if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+    if (window.PromptTransforms?.onSlash(event)) return;
     event.preventDefault();
     pendingSearchFocus = true;
     pendingReturnFocus = false;
@@ -718,6 +735,7 @@ window.addEventListener('keydown', event => {
     }
   }
   if (event.key === 'Escape' && location.hash && location.hash !== '#/') {
+    if (window.PromptTransforms?.onEscape(event)) return;
     event.preventDefault();
     pendingReturnFocus = true;
     navigateToHash('#/');
