@@ -115,5 +115,203 @@
     "summary": "自分用の用語集へすぐ移動する。",
     "url": "https://silovar-uk.github.io/myglossary/",
     "order": 13
+  },
+  {
+    "key": "ぜんあぷ",
+    "title": "記事の構造そのものを変える",
+    "kind": "prompt",
+    "category": "記事",
+    "summary": "文章の推敲に限らず記事体験そのものを設計し直す。",
+    "content": "全然違うアプローチで記事をグレードアップさせる検討をして。ビジュアルを組み込むとか、思いもしない軸。単に記事をよくする、文章をよくするのではダメ。守破離のフレームワークで考えて、一度考えたものを発展させて。ページの構造をコードから変えてもいい。",
+    "order": 14
+  },
+  {
+    "key": "ぜんぞ",
+    "title": "全体像を示してから一問だけ質問",
+    "kind": "prompt",
+    "category": "対話",
+    "summary": "見取り図と一問の確認から読み物へ発展させる。",
+    "content": "このテまず全体像と考えられる論点を短く整理し、その後に回答しやすい選択式の質問を1問だけしてください。回答後は、具体例、他者の考え方や思想、反対意見も参照し、共通点と違いを整理したうえで、読み物として文章化してください。必要な情報は調べ、出典URLも付けてください。",
+    "order": 15
+  },
+  {
+    "key": "ぞくに",
+    "title": "続編を2本構想・制作",
+    "kind": "prompt",
+    "category": "記事",
+    "summary": "単発記事から連続企画を考える。",
+    "content": "続編を徹底的に考えて2本作って。",
+    "order": 16
+  },
+  {
+    "key": "あくべん",
+    "title": "悪魔の代弁者として失敗要因を洗う",
+    "kind": "prompt",
+    "category": "批判",
+    "summary": "好意的な前提を外して失敗要因を検討する。",
+    "content": "悪魔の代弁者になりきって、うまくいかない要素を冷たくやりきって。",
+    "order": 17
+  },
+  {
+    "key": "ぎゃくて",
+    "title": "前提を疑う逆提案",
+    "kind": "prompt",
+    "category": "批判",
+    "summary": "既定方針と逆の選択肢を出す。",
+    "content": "前提から疑った逆提案も大歓迎。",
+    "order": 18
+  },
+  {
+    "key": "かがざつ",
+    "title": "科学と統計から雑学を深掘り",
+    "kind": "prompt",
+    "category": "学習",
+    "summary": "初学者にも定義と統計的背景を伝える。",
+    "content": "科学や統計的な観点で雑学をたくさんほしい。おもしろくなくても、役に立つ知識もいれて。知識が全然ない人にももっとわかりやすくかみ砕いてほしい。わかりやすく、だけど話を雑にするのではなく、そもそも、の部分から始めたうえで、きちんと用語を導入してほしい。",
+    "order": 19
+  },
+  {
+    "key": "うんたし",
+    "title": "思わず驚く蘊蓄を探す",
+    "kind": "prompt",
+    "category": "学習",
+    "summary": "意外な発見で理解を広げる。",
+    "content": "これに関連して思わずおおーと言いたくなるような蘊蓄をおしえて",
+    "order": 20
+  },
+  {
+    "key": "せいいん",
+    "title": "引用を手掛かりに論理を深める",
+    "kind": "prompt",
+    "category": "調査",
+    "summary": "異分野の出典を比較しながら推論の質を高める。",
+    "content": "精度をより上げたいので、引用しながら論理を昇華して。できるだけ多様な分野から。",
+    "order": 21
+  },
+  {
+    "key": "しろせつ",
+    "title": "初心者に技術仕様の工夫を説明",
+    "kind": "prompt",
+    "category": "学習",
+    "summary": "専門用語を少数導入しつつ仕組みを説明する。",
+    "content": "仕様的な工夫を、素人にもわかりやすく、専門用語は絞って、けどいくつか覚えられるように少しだけ使って説明して。",
+    "order": 22
+  },
+  {
+    "key": "しょとわら",
+    "title": "笑えるショートショートを作る",
+    "kind": "prompt",
+    "category": "創作",
+    "summary": "既存テーマを短編のユーモアへ変換する。",
+    "content": "笑っちゃうような例えで、ここまでのテーマでショートショートを作ってみて。",
+    "order": 23
+  },
+  {
+    "key": "じょうぱい",
+    "title": "上司の追及と先輩の支援を想定",
+    "kind": "prompt",
+    "category": "仕事",
+    "summary": "厳しいレビューと建設的な支援を両面から見る。",
+    "content": "上司および先輩を想定して、上司だったらこれに対してどう詰めるか、先輩だったらどう助けるか、を想定しておしえて。",
+    "order": 24
+  },
+  {
+    "key": "しゅはれ",
+    "title": "UX重視でUIを守破離する",
+    "kind": "prompt",
+    "category": "UI",
+    "summary": "守破離で画面構造から体験を検討する。",
+    "content": "UIにおいて、守破離、を検討して、具体的に提案、計画をしてほしい。UXを最重視して。驚きがあると良い。ページの構造自体を変える提案でもかまわない。便利>楽しさ。",
+    "order": 25
+  },
+  {
+    "key": "しゅはって",
+    "title": "守破離で一度の発想を発展させる",
+    "kind": "prompt",
+    "category": "考え方",
+    "summary": "最初の考えを型の理解から発展・独立へ進める。",
+    "content": "守破離のフレームワークで考えて、一度考えたものを発展させて。",
+    "order": 26
+  },
+  {
+    "key": "ぎゃくもん",
+    "title": "コピペしやすい質問から始める",
+    "kind": "prompt",
+    "category": "対話",
+    "summary": "事前質問をコードブロックで返す。",
+    "content": "まずは精度を上げるために質問して。質問部分はコードブロックでコピペしやすくして。",
+    "order": 27
+  },
+  {
+    "key": "こでしよ",
+    "title": "最後に実装仕様書を作る",
+    "kind": "prompt",
+    "category": "開発",
+    "summary": "抽象的な提案をコード実装可能な仕様へ落とす。",
+    "content": "最後はコーディングレベルの仕様書にして。",
+    "order": 28
+  },
+  {
+    "key": "こておし",
+    "title": "研究・議論の系統樹を作る",
+    "kind": "prompt",
+    "category": "調査",
+    "summary": "研究史の概念間のつながりを可視化する。",
+    "content": "この分野における研究・議論を、古いものから、最新のものまでモデル、系統樹として整理して。",
+    "order": 29
+  },
+  {
+    "key": "こんしご",
+    "title": "異分野をコンサル仕事へ結びつける",
+    "kind": "prompt",
+    "category": "仕事",
+    "summary": "離れた領域から実務の学びを発見する。",
+    "content": "発想を水平的にとばして、どんな側面でもいいから、コンサル仕事の勉強となるように、紐づけて",
+    "order": 30
+  },
+  {
+    "key": "さごあつ",
+    "title": "記事を日英3語の高速索引に圧縮",
+    "kind": "prompt",
+    "category": "索引",
+    "summary": "記事を読むかどうか判断する索引をTSVで生成する。",
+    "content": "与えられた記事見出し・情報群を、「どれを詳しく読むか」を一瞬で判断するための索引に変換してください。目的は要約ではなく一覧性の最大化です。各記事を必ず原文全体を読んだうえで、日本語は原則「対象＋出来事／論点＋変化・結果」の3つの意味単位に圧縮し、その右側に同じ意味構造の英語3語圧縮を付けてください。原文先頭の3語を抜き出すだけの処理は禁止し、固有名詞・具体的な対象・中心となる出来事・変化の方向・他記事と区別するために重要な数字や地域を優先してください。上昇／低下、増加／減少、開始／終了、可決／否決、承認／撤回、勝利／敗北、黒字／赤字、値上げ／値下げ、参入／撤退、継続／終了、合憲／違憲、回復／悪化など、出来事の方向性は必ず残してください。数字が記事選択に重要なら「日産　中国販売　52％減」のように1語として使って構いません。感想・評価・煽り表現は加えず、「問題」「動き」「対応」など意味の弱い語より具体語を優先し、似た記事が複数ある場合は固有名詞・地域・制度・数字などで取り違えにくくしてください。英語は逐語訳ではなく、原則「Subject／Topic + Event／Metric + Change／Outcome」の構造で、冠詞や文章表現を省き、短い検索語・見出し語として自然に読める形にしてください。出力前に各項目について内部で「何についての記事か分かるか」「何が起きたか分かるか」「変化の方向が残っているか」「他の記事と取り違えにくいか」「日本語と英語が同じ意味構造か」を確認し、曖昧なら語を選び直してください。元記事の順番を維持し、1記事1行、日本語3語と英語3語をタブ区切りで並べ、番号・説明・要約・理由・コメント・カテゴリ名は付けず、TSV形式のコードブロックだけを出力してください。新聞名、掲載日、ページ番号、文字数、PDF有無などの記事本文ではないメタデータは、記事識別に不可欠でない限り無視してください。",
+    "order": 31
+  },
+  {
+    "key": "れんざつ",
+    "title": "連想からマニアックな雑学を広げる",
+    "kind": "prompt",
+    "category": "学習",
+    "summary": "専門性のある雑学を分野横断で引き出す。",
+    "content": "連想で雑学をお願い。できるだけマニアックに。ジャンルもあれこれあるとよい。専門知識があると尚良い",
+    "order": 32
+  },
+  {
+    "key": "しろむけ",
+    "title": "専門用語も説明する初心者向け解説",
+    "kind": "prompt",
+    "category": "学習",
+    "summary": "専門用語を避けるより丁寧に説明する。",
+    "content": "素人でもわかるようにしつつ、専門用語を使うこと自体は避けないで。説明はつくしてほしい。",
+    "order": 33
+  },
+  {
+    "key": "すきゃぺあ",
+    "title": "英語2単位と日本語3語の高速索引",
+    "kind": "prompt",
+    "category": "索引",
+    "summary": "英日ペアで超短い一覧索引を作る。",
+    "content": "Convert each item into a bilingual rapid-scan index while preserving the original order and outputting exactly one item per line in the format “English Scan Pair | 日本語3語圧縮”; for the English side, use “Anchor + Signal,” where Anchor is the shortest word or compact phrase that uniquely identifies the topic and Signal is the shortest word or compact phrase that captures what changed, happened, or became newsworthy, prioritizing proper nouns, subjects, events, and directional changes such as rise/fall, start/end, approval/rejection, win/defeat, record-high/record-low, while allowing two semantic units rather than forcing exactly two lexical words; for the Japanese side, compress the same item into exactly three concise meaning units that make “何について・何が起きたか” instantly scannable, prioritizing固有名詞・対象・出来事・変化の方向, omitting助詞・丁寧表現・感想・評価・説明, avoiding mere extraction of the first words, and preserving distinctions from nearby items; internally audit both sides by checking whether the topic is identifiable, the event/change is identifiable, the item is distinguishable from others, and the wording can be scanned without reconstructing a full sentence; if unclear, revise before output, and return only the paired lines with no headings, summaries, reasons, or extra text.",
+    "order": 34
+  },
+  {
+    "key": "すてばい",
+    "title": "最後までステップごとに実行",
+    "kind": "prompt",
+    "category": "実行",
+    "summary": "手順化しつつ途中で止まらず完了まで進める。",
+    "content": "ステップバイステップで、けど最後までたのむ。",
+    "order": 35
   }
 ]
