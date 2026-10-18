@@ -6,10 +6,10 @@
   const ROLES = ['すべて','主指示','視点追加','品質強化','表現調整','出力指定','進行指定','リンク'];
   const FAVORITES_KEY = 'techniques:shortcut-favorites';
   const RECIPES = [
-    {label:'調査を深く',description:'調査 → 品質検証 → 別の裏付け',keys:['りさりさ','せい','どうべつ']},
+    {label:'調査を深く',description:'調査 → 品質検証 → 別の裏付け',keys:['りさりさ','せいぷろ','どうべつ']},
     {label:'発想をひっくり返す',description:'前提を外す → 違う分野 → 失敗検証',keys:['ぜろべす','ちがぶん','あくべん']},
     {label:'記事を立体化する',description:'面白い調査 → 構成 → 視覚化',keys:['おもこふう','はいよ','びじゅさし']},
-    {label:'UIを仕様にする',description:'体験設計 → 設計監査 → 実装仕様',keys:['しゅはれ','せい','こでしよ']}
+    {label:'UIを仕様にする',description:'体験設計 → 設計監査 → 実装仕様',keys:['しゅはれ','せいぷろ','こでしよ']}
   ];
   const html = value => String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
   const normalize = value => String(value ?? '').normalize('NFKC').toLowerCase();
@@ -20,7 +20,7 @@
   const isActive = () => location.hash.replace(/^#\/?/, '').startsWith('prompt-transforms/shortcuts');
   const terms = query => normalize(query.trim()).split(/\s+/).filter(Boolean);
   const aliases = query => [...new Set(String(query).split(/[\s、，,+＋;/／]+/).map(key => key.trim()).filter(Boolean))];
-  const storage = () => {try {const rows = JSON.parse(localStorage.getItem(FAVORITES_KEY)||'[]');return new Set(Array.isArray(rows)?rows.filter(x=>typeof x==='string'):[]);}catch{return new Set();}};
+  const storage = () => {try {const rows = JSON.parse(localStorage.getItem(FAVORITES_KEY)||'[]');return new Set(Array.isArray(rows)?rows.filter(x=>typeof x==='string').map(key=>key==='せい'?'せいぷろ':key):[]);}catch{return new Set();}};
   const state = {items:[],promise:null,search:'',intent:'すべて',role:'すべて',favoritesOnly:false,
     favorites:storage(),selected:[],listLimit:14,listScroll:0,moreFilters:false,showFull:false,returnFocus:null};
 
