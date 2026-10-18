@@ -393,7 +393,7 @@ function renderHome() {
       <a href="#/prompt-transforms">
         <div>
           <small>SPECIAL TOOL / PROMPT TRANSFORM</small>
-          <strong>プロンプト変換 — 18パターン＋合言葉13件</strong>
+          <strong>プロンプト変換 — 18パターン＋合言葉56件</strong>
           <p>仕事に使える変換パターンと、短い合言葉から長文を呼ぶ辞書。</p>
         </div>
         <span class="pt-feature-arrow" aria-hidden="true">↗</span>
