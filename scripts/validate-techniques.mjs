@@ -221,6 +221,8 @@ if (!Array.isArray(promptTransforms) || !promptTransforms.length) {
 
 
 const shortcuts = readJson(PROMPT_SHORTCUTS_FILE, 'data/prompt-shortcuts.json');
+const shortcutIntents = new Set(['調べる','考える','書く','作る','学ぶ','整理する','進める','リンク']);
+const shortcutRoles = new Set(['主指示','視点追加','品質強化','表現調整','出力指定','進行指定','リンク']);
 const seenShortcutKeys = new Set();
 const seenShortcutOrders = new Set();
 if (!Array.isArray(shortcuts) || !shortcuts.length) {
@@ -236,6 +238,11 @@ if (!Array.isArray(shortcuts) || !shortcuts.length) {
       if (!isNonEmptyString(item[field])) fail(scope, field + ' が空です');
     });
     if (!['prompt', 'link'].includes(item.kind)) fail(scope, 'kind は prompt または link です');
+    if (!shortcutIntents.has(item.intent)) fail(scope, 'intent は定義済みの目的分類が必要です: ' + item.intent);
+    if (!shortcutRoles.has(item.role)) fail(scope, 'role は定義済みの役割分類が必要です: ' + item.role);
+    if (item.kind === 'link' && (item.intent !== 'リンク' || item.role !== 'リンク')) fail(scope, 'link はリンク分類が必要です');
+    if (item.kind === 'prompt' && (item.intent === 'リンク' || item.role === 'リンク')) fail(scope, 'prompt はリンク以外の分類が必要です');
+    if (item.keywords != null && (!Array.isArray(item.keywords) || item.keywords.some(tag => !isNonEmptyString(tag)))) fail(scope, 'keywords は文字列配列にしてください');
     if (item.kind === 'prompt' && !isNonEmptyString(item.content)) fail(scope, 'プロンプトの原文が必要です');
     if (item.kind === 'link' && (!isNonEmptyString(item.url) || !isHttpUrl(item.url))) fail(scope, 'リンクのURLが不正です');
     if (seenShortcutKeys.has(item.key)) fail(scope, '合言葉が重複しています: ' + item.key);
