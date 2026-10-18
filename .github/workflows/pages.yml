@@ -27,6 +27,13 @@ jobs:
       - name: Validate technique data
         run: node scripts/validate-techniques.mjs
 
+      - name: Validate shortcut UX logic
+        run: |
+          node --check prompt-shortcuts.js
+          node --check prompt-transforms.js
+          node --check app.js
+          node scripts/check-prompt-shortcuts.mjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
