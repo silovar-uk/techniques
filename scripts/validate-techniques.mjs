@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 
 const TECHNIQUES_FILE = new URL('../data/techniques.json', import.meta.url);
 const CATEGORIES_FILE = new URL('../data/categories.json', import.meta.url);
+const PROMPT_TRANSFORMS_FILE = new URL('../data/prompt-transforms.json', import.meta.url);
 const ALLOWED_EVIDENCE = new Set(['VERIFIED', 'SUPPORTED', 'PERSONAL']);
 
 const errors = [];
@@ -173,6 +174,50 @@ techniques.forEach((item, index) => {
   }
 });
 
+
+const promptTransforms = readJson(PROMPT_TRANSFORMS_FILE, 'data/prompt-transforms.json');
+const promptGroups = new Set(['調査', '思考', '制作', '文章', '仕事', '検証']);
+const seenPromptIds = new Set();
+const seenPromptOrder = new Set();
+if (!Array.isArray(promptTransforms) || !promptTransforms.length) {
+  fail('promptTransforms', '1件以上の変換を含む配列が必要です');
+} else {
+  promptTransforms.forEach((item, index) => {
+    const scope = 'promptTransforms[' + index + ']';
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      fail(scope, 'オブジェクトが必要です');
+      return;
+    }
+    ['id', 'group', 'title', 'before', 'template', 'principle', 'avoid'].forEach((field) => {
+      if (!isNonEmptyString(item[field])) fail(scope, field + ' が空です');
+    });
+    if (typeof item.id === 'string') {
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.id)) fail(scope, 'id が不正です');
+      if (seenPromptIds.has(item.id)) fail(scope, 'id が重複しています: ' + item.id);
+      seenPromptIds.add(item.id);
+    }
+    if (!promptGroups.has(item.group)) fail(scope, 'group が未定義です: ' + item.group);
+    if (!Number.isInteger(item.order) || item.order < 1) fail(scope, 'order は1以上の整数です');
+    if (seenPromptOrder.has(item.order)) fail(scope, 'order が重複しています: ' + item.order);
+    seenPromptOrder.add(item.order);
+    if (!Array.isArray(item.tags) || item.tags.some(tag => !isNonEmptyString(tag))) fail(scope, 'tags は文字列の配列です');
+    if (!item.defaults || typeof item.defaults !== 'object' || Array.isArray(item.defaults)) {
+      fail(scope, 'defaults はオブジェクトです');
+    } else {
+      const required = [...item.template.matchAll(/\{\{([^{}]+)\}\}/g)].map(match => match[1]);
+      required.forEach(key => {
+        if (!Object.hasOwn(item.defaults, key) || !isNonEmptyString(item.defaults[key])) {
+          fail(scope, 'テンプレートの変数に初期値がありません: ' + key);
+        }
+      });
+      Object.entries(item.defaults).forEach(([key, value]) => {
+        if (!isNonEmptyString(value)) fail(scope, '初期値が空です: ' + key);
+        if (!required.includes(key)) warn(scope, '使用されない変数: ' + key);
+      });
+    }
+  });
+}
+
 warnings.forEach((message) => console.warn(`! ${message}`));
 
 if (errors.length) {
@@ -181,4 +226,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`✓ ${techniques.length} Techniques / ${categories.length} categories validated (${warnings.length} warning(s)).`);
+console.log(`✓ ${techniques.length} Techniques / ${categories.length} categories / ${promptTransforms.length} prompt transforms validated (${warnings.length} warning(s)).`);
