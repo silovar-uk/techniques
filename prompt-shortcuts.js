@@ -5,6 +5,15 @@
   const INTENTS = ['すべて','調べる','考える','書く','作る','学ぶ','整理する','進める','リンク'];
   const ROLES = ['すべて','主指示','視点追加','品質強化','表現調整','出力指定','進行指定','リンク'];
   const FAVORITES_KEY = 'techniques:shortcut-favorites';
+  const SORT_KEY = 'techniques:shortcut-sort';
+  const SORT_OPTIONS = [
+    {value:'newest',label:'追加順（新しい順）'},
+    {value:'oldest',label:'追加順（古い順）'},
+    {value:'kana',label:'五十音順（合言葉）'},
+    {value:'title',label:'タイトル順'},
+    {value:'relevance',label:'検索関連度・お気に入り順'}
+  ];
+  const kanaCollator = new Intl.Collator('ja',{sensitivity:'base',numeric:true});
   const RECIPES = [
     {label:'調査を深く',description:'調査 → 品質検証 → 別の裏付け',keys:['りさりさ','せいぷろ','どうべつ']},
     {label:'発想をひっくり返す',description:'前提を外す → 違う分野 → 失敗検証',keys:['ぜろべす','ちがぶん','あくべん']},
@@ -21,8 +30,14 @@
   const terms = query => normalize(query.trim()).split(/\s+/).filter(Boolean);
   const aliases = query => [...new Set(String(query).split(/[\s、，,+＋;/／]+/).map(key => key.trim()).filter(Boolean))];
   const storage = () => {try {const rows = JSON.parse(localStorage.getItem(FAVORITES_KEY)||'[]');return new Set(Array.isArray(rows)?rows.filter(x=>typeof x==='string').map(key=>key==='せい'?'せいぷろ':key):[]);}catch{return new Set();}};
+  const savedSort = () => {
+    try {
+      const value=localStorage.getItem(SORT_KEY);
+      return SORT_OPTIONS.some(option=>option.value===value)?value:'newest';
+    } catch {return 'newest';}
+  };
   const state = {items:[],promise:null,search:'',intent:'すべて',role:'すべて',favoritesOnly:false,
-    favorites:storage(),selected:[],listLimit:14,listScroll:0,moreFilters:false,showFull:false,returnFocus:null};
+    favorites:storage(),sort:savedSort(),selected:[],listLimit:14,listScroll:0,moreFilters:false,showFull:false,returnFocus:null};
 
   function announce(text) {const status=$('#siteStatus');if(status) status.textContent=text;}
   async function load() {
@@ -60,11 +75,15 @@
       score>=0&&(state.intent==='すべて'||item.intent===state.intent)&&
       (state.role==='すべて'||item.role===state.role)&&
       (!state.favoritesOnly||state.favorites.has(item.key))
-    ).sort((a,b)=>
-      (state.search.trim()?b.score-a.score:0)||
-      Number(state.favorites.has(b.item.key))-Number(state.favorites.has(a.item.key))||
-      b.item.order-a.item.order
-    ).map(x=>x.item);
+    ).sort((a,b)=>{
+      if(state.sort==='oldest')return a.item.order-b.item.order;
+      if(state.sort==='kana')return kanaCollator.compare(a.item.key,b.item.key)||a.item.order-b.item.order;
+      if(state.sort==='title')return kanaCollator.compare(a.item.title,b.item.title)||a.item.order-b.item.order;
+      if(state.sort==='relevance')return (state.search.trim()?b.score-a.score:0)||
+        Number(state.favorites.has(b.item.key))-Number(state.favorites.has(a.item.key))||
+        b.item.order-a.item.order;
+      return b.item.order-a.item.order;
+    }).map(x=>x.item);
   }
   function promptItems() {return state.selected.map(byKey).filter(item=>item?.kind==='prompt');}
   function combined() {
@@ -134,7 +153,7 @@
     const link=item.kind==='link',favorite=state.favorites.has(item.key),picked=state.selected.includes(item.key);
     return '<article class="ps-v2-row" data-ps-row="'+html(item.key)+'">'+
       '<a class="ps-v2-row-main" href="'+detailUrl(item.key)+'" aria-label="'+html(item.key)+'の原文・詳細を開く">'+
-      '<span class="ps-v2-alias">'+html(item.key)+'</span>'+
+      '<span class="ps-v2-alias-wrap"><span class="ps-v2-alias">'+html(item.key)+'</span><small class="ps-v2-addorder" title="追加順の登録番号">追加 No.'+String(item.order).padStart(3,'0')+'</small></span>'+
       '<span class="ps-v2-row-info"><strong>'+html(item.title)+'</strong><span>'+html(item.summary)+'</span>'+
       '<small>'+html(item.intent)+' · '+html(item.role)+'</small></span></a>'+
       '<div class="ps-v2-row-actions">'+
@@ -151,6 +170,7 @@
     host.innerHTML=visible.length?visible.map(buildRow).join(''):
       '<div class="ps-no-results"><strong>見つからへんかった。</strong><p>合言葉を短くするか、分類を解除して探してみて。</p><button type="button" id="psResetFilters">絞り込みを解除</button></div>';
     const status=$('#psCount');if(status)status.textContent=data.length+' / '+state.items.length+'件';
+    const sortSelect=$('#psSort');if(sortSelect)sortSelect.value=state.sort;
     const more=$('#psMore');if(more){more.hidden=data.length<=state.listLimit;more.textContent='さらに表示（あと'+Math.min(14,data.length-state.listLimit)+'件）';}
     document.querySelectorAll('[data-ps-intent]').forEach(button=>{
       const active=button.dataset.psIntent===state.intent;
@@ -207,6 +227,7 @@
       return '<button type="button" data-ps-intent="'+html(intent)+'" aria-pressed="'+(intent===state.intent)+'" class="'+(intent===state.intent?'is-active':'')+'">'+html(intent)+'<span>'+n+'</span></button>';
     }).join('');
     const roles=ROLES.map(role=>'<option value="'+html(role)+'"'+(role===state.role?' selected':'')+'>'+html(role)+'</option>').join('');
+    const sorts=SORT_OPTIONS.map(option=>'<option value="'+option.value+'"'+(option.value===state.sort?' selected':'')+'>'+html(option.label)+'</option>').join('');
     $('#app').innerHTML=
       '<section class="pt-page ps-v2" aria-labelledby="psPageTitle">'+
       '<div class="pt-topline"><a class="pt-back" href="#/prompt-transforms">← Prompt Transform</a><span>SHORTCUTS / '+state.items.length+'</span></div>'+
@@ -230,12 +251,12 @@
       '<details id="psPreviewDisclosure"><summary>連結した原文を確認 <span>↗</span></summary><pre id="psPreview" tabindex="0"></pre></details>'+
       '<div class="ps-stack-footer"><button id="psStackCopy" class="pt-primary" type="button">まとめてコピー ↗</button><button id="psStackClear" class="pt-secondary" type="button">すべて外す</button></div>'+
       '</section>'+
-      '<section class="ps-v2-list" aria-labelledby="psListTitle"><div class="ps-v2-listhead"><h2 id="psListTitle">合言葉一覧</h2><span id="psCount" aria-live="polite"></span></div>'+
+      '<section class="ps-v2-list" aria-labelledby="psListTitle"><div class="ps-v2-listhead"><h2 id="psListTitle">合言葉一覧</h2><div class="ps-v2-listtools"><span id="psCount" aria-live="polite"></span><label class="ps-v2-sortlabel" for="psSort">並び順 <select id="psSort" aria-controls="psResults">'+sorts+'</select></label></div></div>'+
       '<div id="psResults" class="ps-v2-results"></div><button type="button" id="psMore" class="ps-v2-more" hidden>さらに表示</button>'+
       '<details class="ps-recipe-disclosure"><summary>おすすめの組み合わせから始める <span>↗</span></summary>'+
       '<div class="ps-recipes">'+RECIPES.map((recipe,index)=>'<button type="button" data-ps-recipe="'+index+'"><strong>'+html(recipe.label)+'</strong><small>'+html(recipe.description)+'</small><span>'+recipe.keys.map(html).join(' ＋ ')+'</span></button>').join('')+'</div></details>'+
       '</section>'+
-      '<p class="ps-v2-footnote">登録された指示の原文は変更しない。連結の順番は自由に変更できる。文章の自動生成・AIへの送信は行わない。お気に入りの合言葉キーだけ端末に保存する。</p>'+
+      '<p class="ps-v2-footnote">追加No.は登録順の連番で、追加日時ではない。登録された指示の原文は変更しない。文章の自動生成・AIへの送信は行わない。お気に入りの合言葉キーと並び順の設定だけ端末に保存する。</p>'+
       '</section>'+
       '<div id="psBottomBar" class="ps-bottom-bar" hidden><span id="psBottomCount"></span><button id="psBottomReview" type="button">内容を見る</button><button id="psBottomCopy" type="button">まとめてコピー ↗</button></div>';
 
@@ -270,6 +291,13 @@
     });
     $('#psSearch').addEventListener('input',event=>{state.search=event.target.value;state.listLimit=14;updateResults();});
     $('#psRole').addEventListener('change',event=>{state.role=event.target.value;state.listLimit=14;updateResults();});
+    $('#psSort').addEventListener('change',event=>{
+      state.sort=event.target.value;
+      state.listLimit=14;
+      try{localStorage.setItem(SORT_KEY,state.sort);}catch{}
+      updateResults();
+      announce('並び順を'+SORT_OPTIONS.find(option=>option.value===state.sort).label+'に変更しました。');
+    });
     $('#psAdvanced').addEventListener('toggle',event=>{state.moreFilters=event.target.open;});
     $('#psPreviewDisclosure').addEventListener('toggle',event=>{state.showFull=event.target.open;});
     $('#psBottomBar').addEventListener('click',event=>{
@@ -293,7 +321,7 @@
     document.title=item.key+' — 合言葉辞書';
     $('#app').innerHTML=
       '<article class="pt-page ps-v2 ps-v2-detail" aria-labelledby="psDetailTitle">'+
-      '<div class="pt-topline"><a class="pt-back" href="'+ROOT+'">← 合言葉一覧へ</a><span>'+html(item.intent)+' / '+html(item.role)+'</span></div>'+
+      '<div class="pt-topline"><a class="pt-back" href="'+ROOT+'">← 合言葉一覧へ</a><span>追加 No.'+String(item.order).padStart(3,'0')+' / '+html(item.intent)+' / '+html(item.role)+'</span></div>'+
       '<header class="ps-v2-hero"><p class="pt-eyebrow">SHORTCUT / '+html(item.key)+'</p><h1 id="psDetailTitle" tabindex="-1">'+html(item.title)+'</h1><p>'+html(item.summary)+'</p></header>'+
       '<section class="ps-v2-full"><div class="ps-v2-listhead"><h2>登録内容（原文）</h2><span>'+html(item.key)+'</span></div>'+
       '<pre id="psFullText" tabindex="0">'+html(isLink?item.url:item.content)+'</pre>'+
