@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 const TECHNIQUES_FILE = new URL('../data/techniques.json', import.meta.url);
 const CATEGORIES_FILE = new URL('../data/categories.json', import.meta.url);
 const PROMPT_TRANSFORMS_FILE = new URL('../data/prompt-transforms.json', import.meta.url);
+const PROMPT_SHORTCUTS_FILE = new URL('../data/prompt-shortcuts.json', import.meta.url);
 const ALLOWED_EVIDENCE = new Set(['VERIFIED', 'SUPPORTED', 'PERSONAL']);
 
 const errors = [];
@@ -218,6 +219,33 @@ if (!Array.isArray(promptTransforms) || !promptTransforms.length) {
   });
 }
 
+
+const shortcuts = readJson(PROMPT_SHORTCUTS_FILE, 'data/prompt-shortcuts.json');
+const seenShortcutKeys = new Set();
+const seenShortcutOrders = new Set();
+if (!Array.isArray(shortcuts) || !shortcuts.length) {
+  fail('shortcuts', '1件以上の合言葉が必要です');
+} else {
+  shortcuts.forEach((item, index) => {
+    const scope = 'shortcuts[' + index + ']';
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      fail(scope, 'オブジェクトが必要です');
+      return;
+    }
+    ['key', 'title', 'category', 'summary'].forEach(field => {
+      if (!isNonEmptyString(item[field])) fail(scope, field + ' が空です');
+    });
+    if (!['prompt', 'link'].includes(item.kind)) fail(scope, 'kind は prompt または link です');
+    if (item.kind === 'prompt' && !isNonEmptyString(item.content)) fail(scope, 'プロンプトの原文が必要です');
+    if (item.kind === 'link' && (!isNonEmptyString(item.url) || !isHttpUrl(item.url))) fail(scope, 'リンクのURLが不正です');
+    if (seenShortcutKeys.has(item.key)) fail(scope, '合言葉が重複しています: ' + item.key);
+    seenShortcutKeys.add(item.key);
+    if (!Number.isInteger(item.order) || item.order < 1) fail(scope, 'order は1以上の整数です');
+    if (seenShortcutOrders.has(item.order)) fail(scope, 'order が重複しています: ' + item.order);
+    seenShortcutOrders.add(item.order);
+  });
+}
+
 warnings.forEach((message) => console.warn(`! ${message}`));
 
 if (errors.length) {
@@ -226,4 +254,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`✓ ${techniques.length} Techniques / ${categories.length} categories / ${promptTransforms.length} prompt transforms validated (${warnings.length} warning(s)).`);
+console.log(`✓ ${techniques.length} Techniques / ${categories.length} categories / ${promptTransforms.length} prompt transforms / ${shortcuts.length} personal shortcuts validated (${warnings.length} warning(s)).`);
