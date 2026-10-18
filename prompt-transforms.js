@@ -98,6 +98,7 @@
           <h1 id="ptTitle" tabindex="-1">あいまいな依頼を、<br>使える指示に。</h1>
           <p class="pt-lead">目的から選ぶ。変換前後を見る。自分の条件に直してコピーする。<br>長いプロンプトを暗記する必要はない。</p>
           <div class="pt-path" aria-label="3つの使い方"><span><b>守</b> 比べる</span><span aria-hidden="true">→</span><span><b>破</b> 差し替える</span><span aria-hidden="true">→</span><span><b>離</b> 原理を使う</span></div>
+          <nav class="ps-nav" aria-label="特設ツール切り替え"><span aria-current="page">変換パターン</span><a href="#/prompt-transforms/shortcuts">合言葉辞書 <b>13</b> ↗</a></nav>
         </header>
         <div class="pt-controls" role="search">
           <label for="ptSearch">何を良くしたい？</label>
@@ -238,6 +239,9 @@
   }
 
   async function render(id = '') {
+    if (id === 'shortcuts' || id.startsWith('shortcuts/')) {
+      return window.PromptShortcuts?.render(id === 'shortcuts' ? '' : id.slice('shortcuts/'.length));
+    }
     const root = target();
     root.innerHTML = '<div class="pt-loading" role="status">変換一覧を読み込み中…</div>';
     try {
@@ -260,6 +264,7 @@
   function isActive() { return active(); }
   function onSlash(event) {
     if (!active()) return false;
+    if (location.hash.replace(/^#\/?/, '').startsWith('prompt-transforms/shortcuts')) return window.PromptShortcuts?.onSlash(event) || false;
     if (location.hash === `#/${ROOT}`) {
       event.preventDefault();
       document.querySelector('#ptSearch')?.focus();
@@ -271,6 +276,7 @@
   }
   function onEscape(event) {
     if (!active()) return false;
+    if (location.hash.replace(/^#\/?/, '').startsWith('prompt-transforms/shortcuts')) return window.PromptShortcuts?.onEscape(event) || false;
     if (location.hash !== `#/${ROOT}`) {
       event.preventDefault();
       location.hash = `#/${ROOT}`;
