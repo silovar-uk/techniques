@@ -109,7 +109,7 @@ assetのcache versionは、見た目・挙動のまとまりごとに `YYYYMMDD-
 
 - 内容の正本：`data/prompt-shortcuts.json`。`key`,`kind`,`title`,`summary`,`category`,`intent`,`role`,`content`または`url`,`order`、任意の`keywords`。
 - UI：`prompt-shortcuts.js`、共通の`styles.css`。検索・編集・コピーはブラウザ上だけで処理。
-- CI：`node scripts/validate-techniques.mjs`、`node scripts/check-prompt-shortcuts.mjs`、`node --check`をPages公開前に実行。
+- CI：`node scripts/validate-techniques.mjs`、`node scripts/check-prompt-shortcuts.mjs`、`node --check`を専用のGitHub Actions検証ジョブで実行。
 - 受入試験：①既知の合言葉を1タップでコピー②知らない語から目的カテゴリ経由で発見③2件を追加し順序を変更、原文の無断変更なし④長文や複数条件でページが崩れない⑤iPhone Safariでタッチ・キーボード・スクロールが支障なく動く。
 - 評価指標（測定前の目標）：既知語のコピーまで3操作以内、未知語は10秒以内に候補へ到達、組み合わせコピーは6操作以内を目安として実機テストで見直す。これは実測結果ではない。
 
@@ -166,7 +166,7 @@ node scripts/validate-techniques.mjs
 - source URLが `http` / `https` か
 - Evidenceが3段階のいずれかか
 
-`main` へpushするとGitHub Actionsでも同じ検証を行い、エラーがある場合はPagesへdeployしません。
+`main` へpushするとGitHub Actionsで検証します。**現在はGitHub Pagesの標準ブランチ公開とは別ジョブ**のため、検証失敗だけでは公開を自動停止しません。更新時には検証結果を確認してください。
 
 ## Interactionの原則
 
@@ -179,22 +179,14 @@ node scripts/validate-techniques.mjs
 
 ## GitHub Pages
 
-`.github/workflows/pages.yml` で静的サイトをデプロイします。
+公開URL：`https://silovar-uk.github.io/techniques/`。
 
-公開経路はシンプルに保ちます。
+現在の公開はGitHubが生成する **pages build and deployment** ジョブで確認しています。
+以前は`.github/workflows/pages.yml`からも`deploy-pages`を実行していましたが、標準のPages公開と同時実行になると競合（deployment in progress）するため、**このワークフローは検証専用**に変更しました。
 
-```text
-data/categories.json
-        +
-data/techniques.json
-        ↓
-validation
-        ↓
-GitHub Pages deploy
-```
+- `main`への変更：`Validate Techniques and Shortcut UX`でデータ・JS構文・ショートカットの検索と結合のスモークテスト
+- GitHub Pages：リポジトリ側の標準Pages公開機構で反映
+- 検証ジョブと公開ジョブが独立しているため、検証失敗は自動的には公開を止めません。実装後は両方を確認します
 
-初回のみリポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。
+検証の強制ゲートが必要になった場合は、Pagesの公開元をGitHub Actionsに一本化するなど、リポジトリ設定を含めて切り替えてください（同時に二系統からdeployしない）。
 
-公開URL：
-
-`https://silovar-uk.github.io/techniques/`
