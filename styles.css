@@ -1356,3 +1356,21 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .ps-row-utility,.ps-add,.ps-row-detail{padding:7px 5px;text-align:center;font-size:10px}
 .ps-detail .ps-compose-actions{margin:13px 0;padding:12px 0}
 }
+
+/* Personal shortcut lookup scales to 50+ aliases. */
+.ps-filters{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:0 0 12px}
+.ps-filters label{font-size:11px;font-weight:700;color:var(--muted)}
+.ps-filters select{border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);border-radius:var(--radius-sm);font-size:12px;min-height:36px;padding:6px 10px;max-width:190px}
+.ps-filters select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ps-filters button{border:1px solid var(--line-strong);background:var(--paper);color:var(--muted);font-weight:700;font-size:11px;min-height:36px;border-radius:var(--radius-sm);padding:7px 11px;cursor:pointer}
+.ps-filters button.is-active{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.ps-filters small{color:var(--faint);font-size:10px}
+.ps-row-buttons .ps-favorite{border:1px solid transparent;background:transparent;color:var(--muted);font-size:20px;line-height:1;min-width:30px;min-height:35px;cursor:pointer}
+.ps-row-buttons .ps-favorite.is-favorite{color:#8a6a22}
+.ps-row-buttons .ps-favorite:hover{border-color:var(--line-strong)}
+.ps-row-buttons .ps-favorite:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:760px){
+.ps-filters{gap:7px}
+.ps-filters small{flex:1 0 100%}
+.ps-row-buttons .ps-favorite{align-self:center;min-height:30px}
+}
