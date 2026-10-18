@@ -393,8 +393,8 @@ function renderHome() {
       <a href="#/prompt-transforms">
         <div>
           <small>SPECIAL TOOL / PROMPT TRANSFORM</small>
-          <strong>プロンプト変換 — 18の改善パターン</strong>
-          <p>「詳しく調べて」を、使える調査指示へ。検索・比較・差し替え・コピー。</p>
+          <strong>プロンプト変換 — 18パターン＋合言葉13件</strong>
+          <p>仕事に使える変換パターンと、短い合言葉から長文を呼ぶ辞書。</p>
         </div>
         <span class="pt-feature-arrow" aria-hidden="true">↗</span>
       </a>
@@ -589,7 +589,7 @@ function route() {
     return;
   }
   if (path === 'prompt-transforms' || path.startsWith('prompt-transforms/')) {
-    window.PromptTransforms?.render(path.split('/')[1] || '');
+    window.PromptTransforms?.render(path.split('/').slice(1).join('/') || '');
     return;
   }
   const item = techniques.find(entry => entry.id === path);
