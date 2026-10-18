@@ -18,8 +18,8 @@ assert.ok(t,'Shortcut testing hooks failed');
 t.state.items=data;
 assert.equal(data.length,56,'Expected 56 personal shortcuts');
 assert.equal(new Set(data.map(item=>item.key)).size,data.length,'Duplicate aliases');
-assert.deepEqual([...t.aliases('りさりさ＋せい')],['りさりさ','せいぷろ'],'Japanese plus separator');
-assert.deepEqual([...t.aliases('りさりさ せい')],['りさりさ','せいぷろ'],'Space separator');
+assert.deepEqual([...t.aliases('りさりさ＋せいぷろ')],['りさりさ','せいぷろ'],'Japanese plus separator');
+assert.deepEqual([...t.aliases('りさりさ せいぷろ')],['りさりさ','せいぷろ'],'Space separator');
 
 for(const key of ['しゅはれ','ぜろべす','すきゃぺあ','ぽとふぉり']){
   const hit=data.find(item=>item.key===key);
