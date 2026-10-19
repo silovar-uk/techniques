@@ -20,6 +20,7 @@
     {label:'記事を立体化する',description:'面白い調査 → 構成 → 視覚化',keys:['おもこふう','はいよ','びじゅさし']},
     {label:'UIを仕様にする',description:'体験設計 → 設計監査 → 実装仕様',keys:['しゅはれ','せいぷろ','こでしよ']}
   ];
+  let listClickController = null;
   const html = value => String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
   const normalize = value => String(value ?? '').normalize('NFKC').toLowerCase();
   const $ = selector => document.querySelector(selector);
@@ -37,7 +38,7 @@
     } catch {return 'newest';}
   };
   const state = {items:[],promise:null,search:'',intent:'すべて',role:'すべて',favoritesOnly:false,
-    favorites:storage(),sort:savedSort(),selected:[],listLimit:14,listScroll:0,moreFilters:false,showFull:false,returnFocus:null};
+    favorites:storage(),sort:savedSort(),selected:[],collapsedOriginals:new Set(),listLimit:14,listScroll:0,moreFilters:false,showFull:true,returnFocus:null};
 
   function announce(text) {const status=$('#siteStatus');if(status) status.textContent=text;}
   async function load() {
@@ -139,6 +140,8 @@
     state.selected.includes(key)?state.selected=state.selected.filter(x=>x!==key):state.selected.push(key);
     refreshComposer();
     updateResults();
+    $('#psResults [data-ps-add="'+CSS.escape(key)+'"]')?.focus({preventScroll:true});
+    announce(key+(state.selected.includes(key)?'を組み合わせに追加しました。':'を組み合わせから外しました。'));
   }
   function reorder(key,delta) {
     const i=state.selected.indexOf(key),j=i+delta;
@@ -161,6 +164,9 @@
       (link?'<a class="ps-v2-action ps-v2-open" href="'+html(item.url)+'" target="_blank" rel="noopener noreferrer" aria-label="'+html(item.key)+'のサイトを開く">開く↗</a>':
        '<button type="button" class="ps-v2-action ps-v2-copy" data-ps-copy="'+html(item.key)+'">コピー</button>'+
        '<button type="button" class="ps-v2-action ps-v2-add'+(picked?' is-added':'')+'" data-ps-add="'+html(item.key)+'" aria-label="'+html(item.key)+(picked?'を組み合わせから外す':'を組み合わせに追加')+'" aria-pressed="'+picked+'">'+(picked?'✓':'＋')+'</button>')+
+      '</div><div class="ps-v2-row-body">'+
+      (link?'<p class="ps-v2-row-link">リンク先：<a href="'+html(item.url)+'" target="_blank" rel="noopener noreferrer">'+html(item.url)+'</a></p>':
+       '<details class="ps-v2-original" data-ps-original="'+html(item.key)+'"'+(state.collapsedOriginals.has(item.key)?'':' open')+'><summary data-ps-original-toggle="'+html(item.key)+'">プロンプト原文 <span>折りたたみ／展開</span></summary><pre>'+html(item.content)+'</pre></details>')+
       '</div></article>';
   }
   function updateResults() {
@@ -244,6 +250,11 @@
       '<button id="psOnlyFavorites" type="button" aria-pressed="'+state.favoritesOnly+'">★ お気に入り '+state.favorites.size+'</button></div>'+
       (quick.length?'<div class="ps-v2-pins"><strong>よく使う</strong>'+quick.map(item=>'<button type="button" data-ps-quick="'+html(item.key)+'">'+html(item.key)+' <span>↗</span></button>').join('')+'</div>':'')+
       '</section>'+
+      '<section class="ps-v2-list" aria-labelledby="psListTitle"><div class="ps-v2-listhead"><h2 id="psListTitle">合言葉一覧</h2><div class="ps-v2-listtools"><span id="psCount" aria-live="polite"></span><label class="ps-v2-sortlabel" for="psSort">並び順 <select id="psSort" aria-controls="psResults">'+sorts+'</select></label></div></div>'+
+      '<div id="psResults" class="ps-v2-results"></div><button type="button" id="psMore" class="ps-v2-more" hidden>さらに表示</button>'+
+      '<details class="ps-recipe-disclosure"><summary>おすすめの組み合わせから始める <span>↗</span></summary>'+
+      '<div class="ps-recipes">'+RECIPES.map((recipe,index)=>'<button type="button" data-ps-recipe="'+index+'"><strong>'+html(recipe.label)+'</strong><small>'+html(recipe.description)+'</small><span>'+recipe.keys.map(html).join(' ＋ ')+'</span></button>').join('')+'</div></details>'+
+      '</section>'+
       '<section id="psStack" class="ps-stack" aria-labelledby="psStackHeading" hidden>'+
       '<div class="ps-stack-top"><div><p class="pt-eyebrow">PROMPT STACK / 指示を組み立てる</p><h2 id="psStackHeading" tabindex="-1">選んだ順番に、つなげる。</h2></div><span id="psTotalCount"></span></div>'+
       '<div id="psStackList"></div>'+
@@ -251,17 +262,19 @@
       '<details id="psPreviewDisclosure"><summary>連結した原文を確認 <span>↗</span></summary><pre id="psPreview" tabindex="0"></pre></details>'+
       '<div class="ps-stack-footer"><button id="psStackCopy" class="pt-primary" type="button">まとめてコピー ↗</button><button id="psStackClear" class="pt-secondary" type="button">すべて外す</button></div>'+
       '</section>'+
-      '<section class="ps-v2-list" aria-labelledby="psListTitle"><div class="ps-v2-listhead"><h2 id="psListTitle">合言葉一覧</h2><div class="ps-v2-listtools"><span id="psCount" aria-live="polite"></span><label class="ps-v2-sortlabel" for="psSort">並び順 <select id="psSort" aria-controls="psResults">'+sorts+'</select></label></div></div>'+
-      '<div id="psResults" class="ps-v2-results"></div><button type="button" id="psMore" class="ps-v2-more" hidden>さらに表示</button>'+
-      '<details class="ps-recipe-disclosure"><summary>おすすめの組み合わせから始める <span>↗</span></summary>'+
-      '<div class="ps-recipes">'+RECIPES.map((recipe,index)=>'<button type="button" data-ps-recipe="'+index+'"><strong>'+html(recipe.label)+'</strong><small>'+html(recipe.description)+'</small><span>'+recipe.keys.map(html).join(' ＋ ')+'</span></button>').join('')+'</div></details>'+
-      '</section>'+
       '<p class="ps-v2-footnote">追加No.は登録順の連番で、追加日時ではない。登録された指示の原文は変更しない。文章の自動生成・AIへの送信は行わない。お気に入りの合言葉キーと並び順の設定だけ端末に保存する。</p>'+
       '</section>'+
       '<div id="psBottomBar" class="ps-bottom-bar" hidden><span id="psBottomCount"></span><button id="psBottomReview" type="button">内容を見る</button><button id="psBottomCopy" type="button">まとめてコピー ↗</button></div>';
 
     const root=$('#app');
     root.addEventListener('click',event=>{
+      const originalToggle=event.target.closest('[data-ps-original-toggle]');
+      if(originalToggle){
+        const key=originalToggle.dataset.psOriginalToggle;
+        if(originalToggle.parentElement.open)state.collapsedOriginals.add(key);
+        else state.collapsedOriginals.delete(key);
+        return;
+      }
       const favorite=event.target.closest('[data-ps-favorite]');
       if(favorite){setFavorite(favorite.dataset.psFavorite);return;}
       const copyBtn=event.target.closest('[data-ps-copy]');
@@ -288,7 +301,7 @@
       if(copyStack){copy(combined(),copyStack,'連結したプロンプト');return;}
       const detail=event.target.closest('[href^="#/prompt-transforms/shortcuts/"]');
       if(detail)state.listScroll=window.scrollY;
-    });
+    },{signal:listClickController.signal});
     $('#psSearch').addEventListener('input',event=>{state.search=event.target.value;state.listLimit=14;updateResults();});
     $('#psRole').addEventListener('change',event=>{state.role=event.target.value;state.listLimit=14;updateResults();});
     $('#psSort').addEventListener('change',event=>{
@@ -333,6 +346,8 @@
     requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'instant'}));
   }
   async function render(id='') {
+    listClickController?.abort();
+    listClickController=new AbortController();
     const root=$('#app');
     root.innerHTML='<div class="pt-loading" role="status">合言葉を読み込み中…</div>';
     try{
