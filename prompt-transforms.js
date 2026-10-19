@@ -98,7 +98,7 @@
           <h1 id="ptTitle" tabindex="-1">あいまいな依頼を、<br>使える指示に。</h1>
           <p class="pt-lead">目的から選ぶ。変換前後を見る。自分の条件に直してコピーする。<br>長いプロンプトを暗記する必要はない。</p>
           <div class="pt-path" aria-label="3つの使い方"><span><b>守</b> 比べる</span><span aria-hidden="true">→</span><span><b>破</b> 差し替える</span><span aria-hidden="true">→</span><span><b>離</b> 原理を使う</span></div>
-          <nav class="ps-nav" aria-label="特設ツール切り替え"><span aria-current="page">変換パターン</span><a href="#/prompt-transforms/shortcuts">合言葉辞書 <b>59</b> ↗</a></nav>
+          <nav class="ps-nav" aria-label="特設ツール切り替え"><span aria-current="page">変換パターン</span><a href="#/prompt-transforms/shortcuts">合言葉辞書 <b>60</b> ↗</a></nav>
         </header>
         <div class="pt-controls" role="search">
           <label for="ptSearch">何を良くしたい？</label>
