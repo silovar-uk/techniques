@@ -16,12 +16,12 @@ vm.runInNewContext(instrumented,env,{filename:'prompt-shortcuts.js'});
 const t=env.window.__shortcutTest;
 assert.ok(t,'Shortcut testing hooks failed');
 t.state.items=data;
-assert.equal(data.length,56,'Expected 56 personal shortcuts');
+assert.equal(data.length,57,'Expected 57 personal shortcuts');
 assert.equal(new Set(data.map(item=>item.key)).size,data.length,'Duplicate aliases');
 assert.deepEqual([...t.aliases('りさりさ＋せいぷろ')],['りさりさ','せいぷろ'],'Japanese plus separator');
 assert.deepEqual([...t.aliases('りさりさ せいぷろ')],['りさりさ','せいぷろ'],'Space separator');
 
-for(const key of ['しゅはれ','ぜろべす','すきゃぺあ','ぽとふぉり']){
+for(const key of ['しゅはれ','ぜろべす','すきゃぺあ','ぽとふぉり','いもちょう']){
   const hit=data.find(item=>item.key===key);
   assert.ok(hit,key+' missing');
   t.state.search=key;t.state.intent='すべて';t.state.role='すべて';
