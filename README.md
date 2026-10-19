@@ -88,7 +88,7 @@ assetのcache versionは、見た目・挙動のまとまりごとに `YYYYMMDD-
 ### 合言葉辞書（Personal Shortcuts） — Task-first UI
 
 公開ルート：`#/prompt-transforms/shortcuts`（詳細：`#/prompt-transforms/shortcuts/<合言葉>`）。
-56件の原文（プロンプト53件、リンク3件）は変更しない。指示の意味や強さも自動では書き換えない。
+登録当初の56件の原文（プロンプト53件、リンク3件）は変更しない。追加登録でも、指示の意味や強さを自動では書き換えない。
 
 **情報設計（2軸）**
 
