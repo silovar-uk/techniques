@@ -1,5 +1,105 @@
 [
   {
+    "id": "excel-row-height-column-width-shortcuts",
+    "number": "T-024",
+    "title": "Excelで行の高さ・列の幅をキーボードで変える",
+    "summary": "Excel（Windows）で行の高さ・列の幅を数値指定／自動調整するショートカット。Alt → H → O から4つの操作に分岐する。",
+    "category": "仕事・事務",
+    "tags": [
+      "Excel",
+      "エクセル",
+      "Windows",
+      "ショートカット",
+      "行の高さ",
+      "列の幅",
+      "自動調整",
+      "AutoFit",
+      "書式設定",
+      "キーボード",
+      "効率化"
+    ],
+    "updated": "2026-10-19",
+    "quickAnswer": "行の高さを指定：Alt → H → O → H／列の幅を指定：Alt → H → O → W。自動調整は行が Alt → H → O → A、列が Alt → H → O → I。キーは同時押しではなく順番に押す（Windows版Excel）。",
+    "steps": [
+      "サイズを変更したい行または列のセルを選択する。複数をまとめて変更する場合は、その行・列をまとめて選択する。",
+      "行全体を選ぶには Shift + Space、列全体を選ぶには Ctrl + Space を押す。",
+      "数値を指定したい場合：行の高さは Alt → H → O → H、列の幅は Alt → H → O → W。表示された入力欄に数値を入力し、Enterで確定する。",
+      "内容に合わせて自動調整したい場合：行の高さは Alt → H → O → A、列の幅は Alt → H → O → I を順番に押す。",
+      "調整後に表示が切れていないかを確認する。折り返し表示や結合セルがある場合は、必要に応じて手動調整する。"
+    ],
+    "commands": [
+      {
+        "label": "行の高さを指定",
+        "code": "Alt → H → O → H",
+        "note": "Row Height。数値入力ダイアログを開く。"
+      },
+      {
+        "label": "列の幅を指定",
+        "code": "Alt → H → O → W",
+        "note": "Column Width。数値入力ダイアログを開く。"
+      },
+      {
+        "label": "行の高さを自動調整",
+        "code": "Alt → H → O → A",
+        "note": "AutoFit Row Height。文字の高さに合わせる。"
+      },
+      {
+        "label": "列の幅を自動調整",
+        "code": "Alt → H → O → I",
+        "note": "AutoFit Column Width。セル内容の幅に合わせる。"
+      },
+      {
+        "label": "行全体を選択",
+        "code": "Shift + Space",
+        "note": "現在のセルが含まれる行を選択する。"
+      },
+      {
+        "label": "列全体を選択",
+        "code": "Ctrl + Space",
+        "note": "現在のセルが含まれる列を選択する。"
+      }
+    ],
+    "explanation": [
+      {
+        "term": "Alt → H → O",
+        "text": "Windows版Excelのリボン操作。Hは「ホーム」、Oは「書式」を開くキー操作で、続くキーで高さ・幅・自動調整を選ぶ。矢印は押す順序を表す記号で、キーを同時に押す意味ではない。"
+      },
+      {
+        "term": "高さ・幅の指定と自動調整",
+        "text": "指定は数値を手入力してサイズを統一する方法。自動調整（AutoFit）はセルの内容に合わせてサイズを調整する方法。書式をきれいに揃えたいか、文字を収めたいかで使い分ける。"
+      },
+      {
+        "term": "行・列の選択",
+        "text": "Shift + Spaceで行、Ctrl + Spaceで列を選択してからサイズ変更すると、対象をまとめて整えられる。"
+      },
+      {
+        "term": "Row Height / Column Width / AutoFit",
+        "text": "英語UIでの表現。Row Height＝行の高さ、Column Width＝列の幅、AutoFit＝自動調整。"
+      }
+    ],
+    "tips": [
+      "覚えるのは『Alt → H → O』が共通という点。指定は H（高さ）／W（幅）、自動調整は A（行）／I（列）。",
+      "マウスなら行番号・列見出しの境界線をダブルクリックして自動調整できる。",
+      "列幅と行高の数値は同じ単位ではない。Microsoftの説明では、列幅は既定フォントに基づく文字数単位、行高はポイント単位。",
+      "Altのキー操作はWindowsデスクトップ版Excelを前提とする。Mac版やExcel for the web、日本語以外のリボン環境では異なる場合がある。",
+      "結合セルなどでは自動調整の結果が想定どおりにならないことがある。"
+    ],
+    "sources": [
+      {
+        "label": "Microsoft サポート — Excel のキーボード ショートカット",
+        "url": "https://support.microsoft.com/ja-jp/accessibility/excel/keyboard-shortcuts-in-excel"
+      },
+      {
+        "label": "Microsoft サポート — 列幅や行の高さを変更する",
+        "url": "https://support.microsoft.com/ja-jp/excel/change-the-column-width-and-row-height"
+      }
+    ],
+    "evidence": {
+      "level": "VERIFIED",
+      "note": "Microsoft公式のExcelショートカットと［ホーム］→［書式］→行・列サイズ調整の操作に基づく。キー順はWindows版Excelのリボン操作。"
+    }
+  },
+  {
     "id": "tell-chatgpt-todos-before-starting-day",
     "number": "T-023",
     "title": "朝、まずGPTにToDoを話してから仕事を始める",
