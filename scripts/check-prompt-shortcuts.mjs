@@ -6,7 +6,7 @@ const data=JSON.parse(readFileSync(new URL('../data/prompt-shortcuts.json',impor
 const script=readFileSync(new URL('../prompt-shortcuts.js',import.meta.url),'utf8');
 const marker='window.PromptShortcuts={render,onSlash,onEscape};';
 assert.ok(script.includes(marker),'Missing shortcut public interface');
-const instrumented=script.replace(marker,marker+'\nwindow.__shortcutTest={state,score,results,aliases,combined,warnings,RECIPES,currentPath};');
+const instrumented=script.replace(marker,marker+'\nwindow.__shortcutTest={state,score,results,aliases,combined,warnings,RECIPES,currentPath,eligibleDiscoveryItems,drawDiscovery,buildDiscoveryContent};');
 const env={
   window:{},location:{hash:'#/prompt-transforms/shortcuts'},
   localStorage:{getItem:()=>null,setItem:()=>{}},
@@ -16,7 +16,8 @@ vm.runInNewContext(instrumented,env,{filename:'prompt-shortcuts.js'});
 const t=env.window.__shortcutTest;
 assert.ok(t,'Shortcut testing hooks failed');
 t.state.items=data;
-assert.equal(data.length,57,'Expected 57 personal shortcuts');
+assert.equal(data.length,60,'Expected 60 personal shortcuts');
+assert.equal(data.filter(x=>x.kind==='prompt').length,57,'Expected 57 prompts');
 assert.equal(new Set(data.map(item=>item.key)).size,data.length,'Duplicate aliases');
 assert.deepEqual([...t.aliases('りさりさ＋せいぷろ')],['りさりさ','せいぷろ'],'Japanese plus separator');
 assert.deepEqual([...t.aliases('りさりさ せいぷろ')],['りさりさ','せいぷろ'],'Space separator');
@@ -45,8 +46,22 @@ assert.ok(t.warnings().some(x=>x.includes('出力形式')),'Output collision war
 for(const recipe of t.RECIPES){
  assert.ok(recipe.keys.every(key=>data.some(x=>x.key===key&&x.kind==='prompt')),recipe.label+' has invalid shortcut');
 }
+
+const eligible=t.eligibleDiscoveryItems();
+assert.equal(eligible.length,57,'Only actual prompts belong in discovery');
+const seen=new Set();
+for(let i=0;i<eligible.length;i++){
+  const drawn=t.drawDiscovery();
+  assert.ok(drawn&&drawn.kind==='prompt','Discovery must never pick a link');
+  assert.ok(!seen.has(drawn.key),'Discovery repeated a prompt before full cycle');
+  seen.add(drawn.key);
+}
+const last=t.state.discoveryKey;
+assert.notEqual(t.drawDiscovery().key,last,'Discovery must not repeat at deck boundary');
+assert.ok(t.buildDiscoveryContent(data.find(x=>x.key==='しゅはれ')).includes('UX重視'),'Discovery should show actual title');
+assert.ok(t.buildDiscoveryContent(data.find(x=>x.key==='しゅはれ')).includes('プロンプト原文'),'Discovery should expose original text');
 env.location.hash='#/prompt-transforms/shortcuts';
 assert.equal(t.currentPath(),'','List route');
 env.location.hash='#/prompt-transforms/shortcuts/'+encodeURIComponent('せいぷろ');
 assert.equal(t.currentPath(),'せいぷろ','Detail route');
-console.log('✓ Shortcut UI smoke tests: search, classification, composition, warning, recipe, routes');
+console.log('✓ Shortcut UI smoke tests: search, classification, composition, warning, recipe, routes, nonrepeating discovery');

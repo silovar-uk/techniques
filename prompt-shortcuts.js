@@ -38,7 +38,7 @@
     } catch {return 'newest';}
   };
   const state = {items:[],promise:null,search:'',intent:'すべて',role:'すべて',favoritesOnly:false,
-    favorites:storage(),sort:savedSort(),selected:[],collapsedOriginals:new Set(),listLimit:14,listScroll:0,moreFilters:false,showFull:true,returnFocus:null};
+    favorites:storage(),sort:savedSort(),selected:[],collapsedOriginals:new Set(),listLimit:14,listScroll:0,moreFilters:false,showFull:true,returnFocus:null,discoveryDeck:[],discoveryKey:''};
 
   function announce(text) {const status=$('#siteStatus');if(status) status.textContent=text;}
   async function load() {
@@ -51,6 +51,63 @@
         state.items=rows;return rows;
       }).catch(error=>{state.promise=null;throw error;});
     return state.promise;
+  }
+
+
+  // Random permutation: every prompt gets one turn before any repeats.
+  function eligibleDiscoveryItems() {
+    return state.items.filter(item=>item.kind==='prompt'&&typeof item.content==='string'&&item.content.trim());
+  }
+  function refillDiscoveryDeck() {
+    const keys=eligibleDiscoveryItems().map(item=>item.key);
+    for(let i=keys.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [keys[i],keys[j]]=[keys[j],keys[i]];
+    }
+    if(keys.length>1&&keys[keys.length-1]===state.discoveryKey){
+      [keys[0],keys[keys.length-1]]=[keys[keys.length-1],keys[0]];
+    }
+    state.discoveryDeck=keys;
+  }
+  function drawDiscovery() {
+    if(!state.discoveryDeck.length)refillDiscoveryDeck();
+    const key=state.discoveryDeck.pop();
+    state.discoveryKey=key||'';
+    return byKey(key);
+  }
+  function buildDiscoveryContent(item) {
+    if(!item)return '';
+    return '<div class="ps-discover-meta"><strong>'+html(item.key)+'</strong><span>'+html(item.intent)+' · '+html(item.role)+'</span></div>'+
+      '<h2 id="psDiscoverTitle">'+html(item.title)+'</h2>'+
+      '<p class="ps-discover-use"><span>こんなときに</span>'+html(item.summary)+'</p>'+
+      '<details class="ps-discover-original" open><summary>登録されたプロンプト原文 <span>'+item.content.length+'文字</span></summary><pre>'+html(item.content)+'</pre></details>';
+  }
+  function updateDiscoveryActions() {
+    const item=byKey(state.discoveryKey);
+    if(!item)return;
+    const favorite=$('#psDiscoverFavorite'),add=$('#psDiscoverAdd');
+    if(favorite){
+      const saved=state.favorites.has(item.key);
+      favorite.textContent=saved?'★ 保存済み':'☆ 保存';
+      favorite.setAttribute('aria-pressed',String(saved));
+      favorite.setAttribute('aria-label',item.key+(saved?'の保存を解除':'を保存'));
+    }
+    if(add){
+      const selected=state.selected.includes(item.key);
+      add.textContent=selected?'✓ 組み合わせに追加済み':'＋ 組み合わせ';
+      add.setAttribute('aria-pressed',String(selected));
+      add.setAttribute('aria-label',item.key+(selected?'を組み合わせから外す':'を組み合わせに追加'));
+    }
+  }
+  function updateDiscovery() {
+    const item=byKey(state.discoveryKey);
+    const host=$('#psDiscoverContent');
+    if(!host||!item)return;
+    host.innerHTML=buildDiscoveryContent(item);
+    const copyButton=$('#psDiscoverCopy');
+    if(copyButton){copyButton.textContent='原文をコピー ↗';copyButton.classList.remove('is-copied');}
+    updateDiscoveryActions();
+    announce('新しい提案：'+item.key+'、'+item.title);
   }
 
   function score(item, query) {
@@ -122,25 +179,29 @@
     } catch(error) {
       button.textContent='コピー失敗';
       announce('コピーに失敗しました。全文表示から選択してコピーしてください。');
-      const pre=$('#psFullText')||$('#psPreview');
+      const pre=button.id==='psDiscoverCopy'?$('#psDiscoverContent pre'):($('#psFullText')||$('#psPreview'));
       if(pre){const range=document.createRange();range.selectNodeContents(pre);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);}
     }
   }
-  function setFavorite(key) {
+  function setFavorite(key,focusRow=true) {
     state.favorites.has(key)?state.favorites.delete(key):state.favorites.add(key);
     try{localStorage.setItem(FAVORITES_KEY,JSON.stringify([...state.favorites]));}catch{}
     updateResults();
     announce(key+(state.favorites.has(key)?'をお気に入りに登録しました。':'をお気に入りから外しました。'));
-    const btn=$('#psResults [data-ps-favorite="'+CSS.escape(key)+'"]');
-    btn?.focus({preventScroll:true});
+    updateDiscoveryActions();
+    if(focusRow){
+      const btn=$('#psResults [data-ps-favorite="'+CSS.escape(key)+'"]');
+      btn?.focus({preventScroll:true});
+    }
   }
-  function addKey(key) {
+  function addKey(key,focusRow=true) {
     const item=byKey(key);
     if(!item||item.kind!=='prompt')return;
     state.selected.includes(key)?state.selected=state.selected.filter(x=>x!==key):state.selected.push(key);
     refreshComposer();
     updateResults();
-    $('#psResults [data-ps-add="'+CSS.escape(key)+'"]')?.focus({preventScroll:true});
+    if(focusRow)$('#psResults [data-ps-add="'+CSS.escape(key)+'"]')?.focus({preventScroll:true});
+    updateDiscoveryActions();
     announce(key+(state.selected.includes(key)?'を組み合わせに追加しました。':'を組み合わせから外しました。'));
   }
   function reorder(key,delta) {
@@ -228,6 +289,7 @@
   function renderList() {
     document.title='合言葉辞書 — Techniques';
     const quick=state.items.filter(item=>state.favorites.has(item.key)).slice(0,6);
+    const discovered=byKey(state.discoveryKey)||drawDiscovery();
     const filters=INTENTS.map(intent=>{
       const n=intent==='すべて'?state.items.length:state.items.filter(item=>item.intent===intent).length;
       return '<button type="button" data-ps-intent="'+html(intent)+'" aria-pressed="'+(intent===state.intent)+'" class="'+(intent===state.intent?'is-active':'')+'">'+html(intent)+'<span>'+n+'</span></button>';
@@ -240,6 +302,17 @@
       '<header class="ps-v2-hero"><p class="pt-eyebrow">PERSONAL PROMPT INDEX</p><h1 id="psPageTitle">思い出す前に、見つかる。</h1>'+
       '<p>合言葉でも、やりたいことでも。探してコピー。必要な指示だけ、つなげて使う。</p>'+
       '<nav class="ps-nav" aria-label="特設ツール切り替え"><a href="#/prompt-transforms">変換パターン</a><span aria-current="page">合言葉辞書</span></nav></header>'+
+
+      '<section id="psDiscovery" class="ps-discover" aria-labelledby="psDiscoverTitle">'+
+      '<div class="ps-discover-top"><span class="ps-discover-kicker">ONE USEFUL PROMPT / いまの一手</span><span>'+eligibleDiscoveryItems().length+'件からランダム提案</span></div>'+
+      '<div id="psDiscoverContent">'+buildDiscoveryContent(discovered)+'</div>'+
+      '<div class="ps-discover-actions"><div class="ps-discover-primary">'+
+      '<button id="psDiscoverCopy" class="ps-discover-copy" type="button">原文をコピー ↗</button>'+
+      '<button id="psDiscoverNext" class="ps-discover-next" type="button" aria-controls="psDiscoverContent">↻ 別の提案</button></div>'+
+      '<div class="ps-discover-secondary">'+
+      '<button id="psDiscoverFavorite" type="button" aria-pressed="false">☆ 保存</button>'+
+      '<button id="psDiscoverAdd" type="button" aria-pressed="false">＋ 組み合わせ</button></div></div>'+
+      '</section>'+
       '<section class="ps-v2-finder" aria-label="合言葉を探す">'+
       '<label for="psSearch">何をしたい？ 合言葉でも検索できる</label>'+
       '<div class="ps-v2-search"><span aria-hidden="true">⌕</span><input id="psSearch" type="search" placeholder="例：市場調査 / UI / りさりさ" autocomplete="off" value="'+html(state.search)+'" aria-controls="psResults"><kbd>/</kbd></div>'+
@@ -268,6 +341,14 @@
 
     const root=$('#app');
     root.addEventListener('click',event=>{
+      if(event.target.closest('#psDiscoverNext')){drawDiscovery();updateDiscovery();return;}
+      if(event.target.closest('#psDiscoverCopy')){
+        const item=byKey(state.discoveryKey);
+        if(item)copy(item.content,event.target.closest('#psDiscoverCopy'),item.key);
+        return;
+      }
+      if(event.target.closest('#psDiscoverFavorite')){if(state.discoveryKey)setFavorite(state.discoveryKey,false);return;}
+      if(event.target.closest('#psDiscoverAdd')){if(state.discoveryKey)addKey(state.discoveryKey,false);return;}
       const originalToggle=event.target.closest('[data-ps-original-toggle]');
       if(originalToggle){
         const key=originalToggle.dataset.psOriginalToggle;
@@ -318,7 +399,7 @@
       const copyBtn=event.target.closest('#psBottomCopy');
       if(copyBtn)copy(combined(),copyBtn,'連結したプロンプト');
     });
-    updateResults();refreshComposer();
+    updateResults();refreshComposer();updateDiscoveryActions();
     requestAnimationFrame(()=>{
       window.scrollTo({top:state.listScroll,behavior:'instant'});
       if(state.returnFocus){
