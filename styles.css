@@ -1545,3 +1545,38 @@ body.ps-has-stack .site-footer{padding-bottom:90px}
 .ps-bottom-bar #psBottomCopy{background:var(--accent);color:white;border-color:var(--accent)}
 body.ps-has-stack .site-footer{padding-bottom:96px}
 }
+
+
+/* Shortcut discovery: source-faithful text, touch-first actions. */
+.ps-discover{margin:19px 0 2px;padding:20px 22px 18px;border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--paper)}
+.ps-discover-top{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--faint);font-size:10px;font-weight:650;letter-spacing:.04em}
+.ps-discover-kicker{color:var(--accent);font-weight:800}
+.ps-discover-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.ps-discover-meta strong{font-size:16px;color:var(--accent)}
+.ps-discover-meta span{font-size:11px;color:var(--muted)}
+.ps-discover h2{margin:5px 0 10px;font-size:clamp(21px,3vw,29px);line-height:1.35;letter-spacing:-.025em}
+.ps-discover-use{margin:0 0 14px;line-height:1.6;font-size:13px;color:var(--ink)}
+.ps-discover-use span{display:inline-block;margin-right:9px;color:var(--muted);font-size:10px;font-weight:750}
+.ps-discover-original{border:1px solid var(--line);background:var(--bg);border-radius:var(--radius-sm)}
+.ps-discover-original summary{min-height:42px;padding:9px 12px;cursor:pointer;font-size:11px;font-weight:750}
+.ps-discover-original summary span{margin-left:10px;color:var(--muted);font-weight:500}
+.ps-discover-original pre{margin:0;padding:12px 14px 14px;max-height:205px;overflow:auto;border-top:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.75 ui-monospace,SFMono-Regular,Menlo,"Hiragino Sans",monospace;overscroll-behavior:contain}
+.ps-discover-actions{display:flex;flex-direction:column;gap:9px;margin-top:13px}
+.ps-discover-primary,.ps-discover-secondary{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ps-discover-actions button{min-height:45px;padding:9px 12px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--paper);color:var(--ink);font-size:12px;font-weight:750;cursor:pointer}
+.ps-discover-actions button:hover{border-color:var(--accent)}
+.ps-discover-actions .ps-discover-copy{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ps-discover-actions .ps-discover-copy.is-copied{background:#24715d}
+.ps-discover-secondary button{min-height:40px;border-color:var(--line);font-weight:650;color:var(--accent)}
+.ps-discover-secondary button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.ps-discover :is(button,summary):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:760px){
+  .ps-discover{margin-top:14px;padding:14px 13px 15px}
+  .ps-discover-top{align-items:flex-start;gap:5px;font-size:9px}
+  .ps-discover-top>span:last-child{white-space:nowrap}
+  .ps-discover-meta{margin-top:11px}
+  .ps-discover h2{font-size:22px}
+  .ps-discover-use{font-size:12px}
+  .ps-discover-original pre{max-height:175px;font-size:11px}
+  .ps-discover-actions button{padding:9px 5px;font-size:11px}
+}
