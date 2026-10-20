@@ -831,5 +831,26 @@
       "簡潔",
       "短く"
     ]
+  },
+  {
+    "key": "tb",
+    "title": "TSVブロックで出力",
+    "kind": "prompt",
+    "category": "出力形式",
+    "summary": "表や一覧をコピーしやすいタブ区切りのコードブロックにする。",
+    "content": "TSVブロックにしてほしい。",
+    "order": 62,
+    "intent": "整理する",
+    "role": "出力指定",
+    "keywords": [
+      "tb",
+      "ｔｂ",
+      "TSV",
+      "タブ区切り",
+      "コードブロック",
+      "Excel",
+      "Google Sheets",
+      "コピー"
+    ]
   }
 ]
