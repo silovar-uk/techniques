@@ -16,14 +16,14 @@ vm.runInNewContext(instrumented,env,{filename:'prompt-shortcuts.js'});
 const t=env.window.__shortcutTest;
 assert.ok(t,'Shortcut testing hooks failed');
 t.state.items=data;
-assert.equal(data.length,61,'Expected 61 personal shortcuts');
-assert.equal(data.filter(x=>x.kind==='prompt').length,58,'Expected 58 prompts');
+assert.equal(data.length,64,'Expected 64 personal shortcuts');
+assert.equal(data.filter(x=>x.kind==='prompt').length,61,'Expected 61 prompts');
 assert.equal(new Set(data.map(item=>item.key)).size,data.length,'Duplicate aliases');
 assert.equal(data.find(x=>x.key==='tm')?.content,'端的に短く答えて。','tm shortcut should preserve original text');
 assert.deepEqual([...t.aliases('りさりさ＋せいぷろ')],['りさりさ','せいぷろ'],'Japanese plus separator');
 assert.deepEqual([...t.aliases('りさりさ せいぷろ')],['りさりさ','せいぷろ'],'Space separator');
 
-for(const key of ['しゅはれ','ぜろべす','すきゃぺあ','ぽとふぉり','いもちょう']){
+for(const key of ['しゅはれ','ぜろべす','すきゃぺあ','ぽとふぉり','いもちょう','へそどこ']){
   const hit=data.find(item=>item.key===key);
   assert.ok(hit,key+' missing');
   t.state.search=key;t.state.intent='すべて';t.state.role='すべて';
@@ -49,7 +49,7 @@ for(const recipe of t.RECIPES){
 }
 
 const eligible=t.eligibleDiscoveryItems();
-assert.equal(eligible.length,58,'Only actual prompts belong in discovery');
+assert.equal(eligible.length,61,'Only actual prompts belong in discovery');
 const seen=new Set();
 for(let i=0;i<eligible.length;i++){
   const drawn=t.drawDiscovery();
