@@ -20,6 +20,14 @@ assert.ok(data.length>=64,'Personal shortcuts must not fall below the tested bas
 assert.ok(data.filter(x=>x.kind==='prompt').length>=61,'Prompts must not fall below the tested baseline of 61');
 assert.equal(new Set(data.map(item=>item.key)).size,data.length,'Duplicate aliases');
 assert.equal(data.find(x=>x.key==='tm')?.content,'端的に短く答えて。','tm shortcut should preserve original text');
+for(const key of ['そらあめ','ちらたか']){
+  const entry=data.find(item=>item.key===key);
+  assert.ok(entry, key+' shortcut missing');
+  assert.ok(!/[\r\n]/.test(entry.content), key+' content should be a single line');
+  assert.ok([...entry.content].length<=60 || (entry.shortContent&&[...entry.shortContent].length<=60), key+' needs a 60-character variant');
+  assert.ok(t.buildDiscoveryContent(entry).includes(entry.content), key+' original should appear on discovery');
+  if(entry.shortContent)assert.ok(t.buildDiscoveryContent(entry).includes(entry.shortContent), key+' short version should appear on discovery');
+}
 assert.deepEqual([...t.aliases('りさりさ＋せいぷろ')],['りさりさ','せいぷろ'],'Japanese plus separator');
 assert.deepEqual([...t.aliases('りさりさ せいぷろ')],['りさりさ','せいぷろ'],'Space separator');
 

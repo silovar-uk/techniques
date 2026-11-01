@@ -111,7 +111,9 @@ assetのcache versionは、見た目・挙動のまとまりごとに `YYYYMMDD-
 
 **運用と検証**
 
-- 内容の正本：`data/prompt-shortcuts.json`。`key`,`kind`,`title`,`summary`,`category`,`intent`,`role`,`content`または`url`,`order`、任意の`keywords`。
+- 内容の正本：`data/prompt-shortcuts.json`。`key`,`kind`,`title`,`summary`,`category`,`intent`,`role`,`content`または`url`,`order`、任意の`keywords` と `shortContent`。
+- **No.75以降の登録ルール**：プロンプト本文 `content` は必ず改行なしの1行とする。本文が60文字を超える場合は `shortContent` に60文字以内・1行の短縮版を必ず登録する。60文字以内なら短縮版は任意。過去の原文は一括変更しない。
+- 短縮版がある項目では、一覧・発見カード・詳細に短縮文を表示し、本文とは別にコピーできる。検索・連結・通常コピーは従来どおり原文優先。
 - UI：`prompt-shortcuts.js`、共通の`styles.css`。検索・編集・コピーはブラウザ上だけで処理。
 - CI：`node scripts/validate-techniques.mjs`、`node scripts/check-prompt-shortcuts.mjs`、`node --check`を専用のGitHub Actions検証ジョブで実行。
 - 受入試験：①既知の合言葉を1タップでコピー②知らない語から目的カテゴリ経由で発見③2件を追加し順序を変更、原文の無断変更なし④長文や複数条件でページが崩れない⑤iPhone Safariでタッチ・キーボード・スクロールが支障なく動く。

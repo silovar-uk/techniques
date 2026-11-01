@@ -1580,3 +1580,12 @@ body.ps-has-stack .site-footer{padding-bottom:96px}
   .ps-discover-original pre{max-height:175px;font-size:11px}
   .ps-discover-actions button{padding:9px 5px;font-size:11px}
 }
+
+/* Concise variants for new one-line shortcuts. */
+.ps-short-version{margin-top:10px;padding:10px 12px;background:var(--accent-soft);border:1px solid var(--line);border-radius:var(--radius-sm);overflow-wrap:anywhere}
+.ps-short-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ps-short-head strong{font-size:11px;color:var(--accent)}
+.ps-short-head small{font-weight:500;color:var(--muted);margin-left:5px}
+.ps-short-head button{min-height:36px;padding:6px 10px;background:var(--paper);border:1px solid var(--line-strong);border-radius:var(--radius-sm);font-size:11px;font-weight:700;color:var(--accent);cursor:pointer}
+.ps-short-version p{margin:5px 0 0;font-size:12px;line-height:1.75;color:var(--ink)}
+@media(max-width:450px){.ps-short-head{align-items:flex-start;flex-wrap:wrap}.ps-short-head button{min-height:44px}}

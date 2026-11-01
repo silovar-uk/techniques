@@ -244,6 +244,12 @@ if (!Array.isArray(shortcuts) || !shortcuts.length) {
     if (item.kind === 'prompt' && (item.intent === 'リンク' || item.role === 'リンク')) fail(scope, 'prompt はリンク以外の分類が必要です');
     if (item.keywords != null && (!Array.isArray(item.keywords) || item.keywords.some(tag => !isNonEmptyString(tag)))) fail(scope, 'keywords は文字列配列にしてください');
     if (item.kind === 'prompt' && !isNonEmptyString(item.content)) fail(scope, 'プロンプトの原文が必要です');
+    if (item.shortContent != null && (!isNonEmptyString(item.shortContent) || [...item.shortContent].length > 60 || /[\r\n]/.test(item.shortContent))) fail(scope, 'shortContent は60文字以内の1行にしてください');
+    // No.75 onward: all new prompts must be single-line, with short variant when long.
+    if (item.kind === 'prompt' && item.order >= 75 && typeof item.content === 'string') {
+      if (/[\r\n]/.test(item.content)) fail(scope, '新規のプロンプト本文は必ず1行にしてください');
+      if ([...item.content].length > 60 && !isNonEmptyString(item.shortContent)) fail(scope, '本文が60文字超の場合は shortContent が必要です');
+    }
     if (item.kind === 'link' && (!isNonEmptyString(item.url) || !isHttpUrl(item.url))) fail(scope, 'リンクのURLが不正です');
     if (seenShortcutKeys.has(item.key)) fail(scope, '合言葉が重複しています: ' + item.key);
     seenShortcutKeys.add(item.key);

@@ -75,12 +75,16 @@
     state.discoveryKey=key||'';
     return byKey(key);
   }
+  function shortVersion(item) {
+    if (!item?.shortContent) return '';
+    return '<div class="ps-short-version"><div class="ps-short-head"><strong>60文字以内版 <small>'+[...item.shortContent].length+'文字</small></strong><button type="button" data-ps-copy-short="'+html(item.key)+'">短縮版をコピー</button></div><p>'+html(item.shortContent)+'</p></div>';
+  }
   function buildDiscoveryContent(item) {
     if(!item)return '';
     return '<div class="ps-discover-meta"><strong>'+html(item.key)+'</strong><span>'+html(item.intent)+' · '+html(item.role)+'</span></div>'+
       '<h2 id="psDiscoverTitle">'+html(item.title)+'</h2>'+
       '<p class="ps-discover-use"><span>こんなときに</span>'+html(item.summary)+'</p>'+
-      '<details class="ps-discover-original" open><summary>登録されたプロンプト原文 <span>'+item.content.length+'文字</span></summary><pre>'+html(item.content)+'</pre></details>';
+      '<details class="ps-discover-original" open><summary>登録されたプロンプト原文 <span>'+item.content.length+'文字</span></summary><pre>'+html(item.content)+'</pre></details>'+shortVersion(item);
   }
   function updateDiscoveryActions() {
     const item=byKey(state.discoveryKey);
@@ -113,7 +117,7 @@
   function score(item, query) {
     if(!query) return 0;
     const t=terms(query);
-    const bits=[item.key,item.title,item.summary,item.category,item.intent,item.role,...(item.keywords||[]),item.kind==='prompt'?item.content:''];
+    const bits=[item.key,item.title,item.summary,item.category,item.intent,item.role,...(item.keywords||[]),item.kind==='prompt'?item.content:'',item.shortContent||''];
     const normalized=bits.map(normalize);
     if(!t.every(word=>normalized.some(value=>value.includes(word))))return -1;
     const name=normalize(item.key), title=normalize(item.title), tags=normalize([...(item.keywords||[]),item.intent,item.role].join(' '));
@@ -228,7 +232,7 @@
       '</div><div class="ps-v2-row-body">'+
       (link?'<p class="ps-v2-row-link">リンク先：<a href="'+html(item.url)+'" target="_blank" rel="noopener noreferrer">'+html(item.url)+'</a></p>':
        '<details class="ps-v2-original" data-ps-original="'+html(item.key)+'"'+(state.collapsedOriginals.has(item.key)?'':' open')+'><summary data-ps-original-toggle="'+html(item.key)+'">プロンプト原文 <span>折りたたみ／展開</span></summary><pre>'+html(item.content)+'</pre></details>')+
-      '</div></article>';
+      shortVersion(item)+'</div></article>';
   }
   function updateResults() {
     const host=$('#psResults');if(!host)return;
@@ -358,6 +362,8 @@
       }
       const favorite=event.target.closest('[data-ps-favorite]');
       if(favorite){setFavorite(favorite.dataset.psFavorite);return;}
+      const shortBtn=event.target.closest('[data-ps-copy-short]');
+      if(shortBtn){const item=byKey(shortBtn.dataset.psCopyShort);if(item?.shortContent)copy(item.shortContent,shortBtn,item.key+'の短縮版');return;}
       const copyBtn=event.target.closest('[data-ps-copy]');
       if(copyBtn){const item=byKey(copyBtn.dataset.psCopy);if(item)copy(item.content,copyBtn,item.key);return;}
       const add=event.target.closest('[data-ps-add]');
@@ -419,10 +425,11 @@
       '<header class="ps-v2-hero"><p class="pt-eyebrow">SHORTCUT / '+html(item.key)+'</p><h1 id="psDetailTitle" tabindex="-1">'+html(item.title)+'</h1><p>'+html(item.summary)+'</p></header>'+
       '<section class="ps-v2-full"><div class="ps-v2-listhead"><h2>登録内容（原文）</h2><span>'+html(item.key)+'</span></div>'+
       '<pre id="psFullText" tabindex="0">'+html(isLink?item.url:item.content)+'</pre>'+
-      '<div class="ps-detail-actions">'+(isLink?'<a class="pt-primary ps-v2-link-button" href="'+html(item.url)+'" target="_blank" rel="noopener noreferrer">サイトを開く ↗</a>':
+      shortVersion(item)+'<div class="ps-detail-actions">'+(isLink?'<a class="pt-primary ps-v2-link-button" href="'+html(item.url)+'" target="_blank" rel="noopener noreferrer">サイトを開く ↗</a>':
       '<button type="button" class="pt-primary" id="psCopyOriginal">原文をコピー ↗</button>')+
       '<button type="button" class="pt-secondary" id="psCopyUrl">この項目のURLをコピー</button></div></section></article>';
     $('#psCopyOriginal')?.addEventListener('click',event=>copy(item.content,event.currentTarget,'原文'));
+    $('#app').querySelector('[data-ps-copy-short]')?.addEventListener('click',event=>copy(item.shortContent,event.currentTarget,'60文字以内版'));
     $('#psCopyUrl')?.addEventListener('click',event=>copy(location.href,event.currentTarget,'項目のURL'));
     requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'instant'}));
   }
