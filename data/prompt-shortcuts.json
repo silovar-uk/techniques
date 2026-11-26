@@ -1570,5 +1570,25 @@
       "キーボード"
     ],
     "shortContent": "を広東語にして、速成の打ち方も教えて。"
+  },
+  {
+    "key": "しぇぷすら",
+    "title": "資料作成マスタープロンプト最新版を適用",
+    "kind": "prompt",
+    "category": "制作",
+    "summary": "GitHub連携で最新版の資料作成ルールを取得し、制作と品質検証に適用する。",
+    "content": "GitHub連携でprivate-myessays内の資料作成マスタープロンプト最新版を全文取得し、準拠・品質検証して。",
+    "order": 90,
+    "intent": "作る",
+    "role": "品質強化",
+    "keywords": [
+      "しぇぷすら",
+      "GitHub",
+      "資料作成",
+      "スライド",
+      "マスタープロンプト",
+      "品質検証"
+    ],
+    "shortContent": "GitHub連携でprivate-myessays内の資料作成マスタープロンプト最新版を全文取得し、準拠・品質検証して。"
   }
 ]
